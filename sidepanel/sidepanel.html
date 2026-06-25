@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Smart Fill</title>
+  <link rel="stylesheet" href="sidepanel.css" />
+</head>
+<body>
+  <!-- ═════════ HEADER ═════════ -->
+  <header class="top-bar">
+    <div class="brand">
+      <span class="brand-icon" aria-hidden="true">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2"
+             stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 12a9 9 0 1 1-3-6.7"/>
+          <polyline points="21 4 21 10 15 10"/>
+        </svg>
+      </span>
+      <h1>Smart&nbsp;Fill</h1>
+    </div>
+    <div class="top-actions">
+      <button class="icon-button" id="btn-refresh" title="Refresh" aria-label="Refresh">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2"
+             stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="23 4 23 10 17 10"/>
+          <polyline points="1 20 1 14 7 14"/>
+          <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- ═════════ MAIN GRID ═════════ -->
+  <div class="grid">
+    <!-- ── Vertical nav rail ── -->
+    <nav class="rail" aria-label="Tabs">
+      <button class="rail-tab is-active" data-tab="sync" aria-current="page">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M3 11l9-8 9 8v10a2 2 0 0 1-2 2h-4v-7h-6v7H5a2 2 0 0 1-2-2z"/>
+        </svg>
+        <span>Home</span>
+      </button>
+      <button class="rail-tab" data-tab="activity">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <rect x="4" y="3" width="16" height="18" rx="2"/>
+          <line x1="8" y1="8" x2="16" y2="8"/>
+          <line x1="8" y1="12" x2="16" y2="12"/>
+          <line x1="8" y1="16" x2="13" y2="16"/>
+        </svg>
+        <span>Activity</span>
+      </button>
+      <button class="rail-tab" data-tab="config">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <line x1="4" y1="6" x2="20" y2="6"/>
+          <circle cx="9" cy="6" r="2" fill="currentColor"/>
+          <line x1="4" y1="12" x2="20" y2="12"/>
+          <circle cx="15" cy="12" r="2" fill="currentColor"/>
+          <line x1="4" y1="18" x2="20" y2="18"/>
+          <circle cx="9" cy="18" r="2" fill="currentColor"/>
+        </svg>
+        <span>Config</span>
+      </button>
+    </nav>
+
+    <!-- ── Main content ── -->
+    <main class="main">
+      <!-- ═════════ SYNC TAB ═════════ -->
+      <!-- The Sync tab hosts BOTH the form-review flow and the image-extraction
+           flow. A mode strip toggles between them when the active page supports
+           both; otherwise it's hidden and the right sub-panel auto-shows. -->
+      <section class="tab-panel is-active" data-panel="sync">
+
+        <!-- Detection card (universal: shows form OR images detection) -->
+        <div class="card detection-card" id="detection-card">
+          <div class="detection-row">
+            <div class="detection-left">
+              <div class="detection-label" id="detection-label">Detected Page</div>
+              <div class="detection-name" id="detection-name">Checking…</div>
+            </div>
+            <span class="badge badge-idle" id="detection-badge">DETECTING</span>
+          </div>
+          <!-- Survey type (Utilant.CaseTypeName). Hidden until detection runs. -->
+          <div class="detection-surveytype-block" id="detection-surveytype-block" style="display:none;">
+            <div class="detection-label">Detected Survey Type</div>
+            <div class="detection-surveytype" id="detection-surveytype">-</div>
+          </div>
+        </div>
+
+        <!-- Mode strip: only visible when the page supports both flows ─── -->
+        <div class="mode-strip" id="mode-strip" style="display:none;" role="tablist" aria-label="Choose action">
+          <button class="mode-btn is-active" data-mode="form" role="tab" aria-selected="true">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2"
+                 stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <rect x="3" y="3" width="18" height="18" rx="2"/>
+              <path d="M3 9h18M9 21V9"/>
+            </svg>
+            <span>Form review</span>
+          </button>
+          <button class="mode-btn" data-mode="images" role="tab" aria-selected="false">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2"
+                 stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+              <circle cx="8.5" cy="8.5" r="1.5"/>
+              <polyline points="21 15 16 10 5 21"/>
+            </svg>
+            <span>Order Photos</span>
+          </button>
+        </div>
+
+        <!-- ═════════ FORM-REVIEW SUBPANEL ═════════ -->
+        <div class="mode-panel is-active" data-mode-panel="form">
+
+          <!-- Status canvas -->
+          <div class="card status-card">
+            <div class="status-section-label">Main</div>
+            <div class="status-head">
+              <h2>Status</h2>
+              <span class="badge badge-idle" id="status-badge">IDLE</span>
+            </div>
+            <p class="status-desc" id="status-desc" hidden></p>
+
+            <div class="canvas">
+              <div class="canvas-bg" aria-hidden="true"></div>
+              <div class="canvas-inner">
+                <div class="canvas-ring" id="canvas-ring">
+                  <svg viewBox="0 0 64 64" aria-hidden="true">
+                    <circle cx="32" cy="32" r="28" class="ring-track"/>
+                    <circle cx="32" cy="32" r="28" class="ring-progress" id="ring-progress"/>
+                  </svg>
+                  <span class="ring-icon" id="ring-icon">
+                    <svg viewBox="0 0 24 24" fill="none"
+                         stroke="currentColor" stroke-width="2"
+                         stroke-linecap="round" stroke-linejoin="round">
+                      <rect x="3" y="3" width="18" height="18" rx="2"/>
+                      <path d="M3 9h18M9 21V9"/>
+                    </svg>
+                  </span>
+                </div>
+                <div class="canvas-title" id="canvas-title">Ready</div>
+                <div class="canvas-subtitle" id="canvas-subtitle">
+                  Click <strong>Sync &amp; Verify</strong> to start.
+                </div>
+                <div class="canvas-progress" id="canvas-progress-label">0% COMPLETED</div>
+              </div>
+            </div>
+
+            <button class="btn btn-primary" id="btn-sync">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                   stroke="currentColor" stroke-width="2.4"
+                   stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="23 4 23 10 17 10"/>
+                <polyline points="1 20 1 14 7 14"/>
+                <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+              </svg>
+              <span>Sync &amp; Verify with AI</span>
+            </button>
+          </div>
+
+          <!-- Queue / AI suggestions -->
+          <div class="card queue-card" id="queue-card" style="display:none;">
+            <div class="queue-head">
+              <div class="queue-title-block">
+                <div class="queue-title">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                       stroke="currentColor" stroke-width="2"
+                       stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <circle cx="12" cy="12" r="10"/>
+                    <line x1="12" y1="8" x2="12" y2="12"/>
+                    <line x1="12" y1="16" x2="12.01" y2="16"/>
+                  </svg>
+                  <span id="queue-heading">AI REVIEW</span>
+                </div>
+                <div class="queue-summary" id="queue-summary">
+                  <span id="count-pending">0</span> to review
+                  <span class="dot-sep">·</span>
+                  <span id="count-accepted">0</span> accepted
+                  <span class="dot-sep">·</span>
+                  <span id="count-rejected">0</span> rejected
+                </div>
+              </div>
+              <div class="bulk-bar" id="bulk-bar">
+                <button class="btn-text" id="btn-accept-all">Accept all</button>
+                <button class="btn-text" id="btn-reject-all">Reject all</button>
+              </div>
+            </div>
+
+            <div class="filter-tabs" role="tablist" aria-label="Filter suggestions">
+              <button class="filter-tab is-active" data-filter="all" role="tab" aria-selected="true">
+                <span>All</span>
+                <span class="filter-count" id="filter-count-all">0</span>
+              </button>
+              <button class="filter-tab" data-filter="different" role="tab" aria-selected="false">
+                <span class="filter-dot filter-dot-different"></span>
+                <span>Different</span>
+                <span class="filter-count" id="filter-count-different">0</span>
+              </button>
+              <button class="filter-tab" data-filter="matched" role="tab" aria-selected="false">
+                <span class="filter-dot filter-dot-matched"></span>
+                <span>Matches</span>
+                <span class="filter-count" id="filter-count-matched">0</span>
+              </button>
+            </div>
+
+            <div class="suggestion-list" id="suggestion-list"></div>
+
+            <button class="btn btn-primary" id="btn-send-feedback" disabled>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                   stroke="currentColor" stroke-width="2.4"
+                   stroke-linecap="round" stroke-linejoin="round">
+                <path d="M22 2 11 13"/>
+                <path d="M22 2 15 22 11 13 2 9 22 2z"/>
+              </svg>
+              <span>Send Feedback</span>
+            </button>
+          </div>
+
+          <!-- Unsupported-form warning -->
+          <div class="card warning-card" id="warning-card" style="display:none;">
+            <div class="warning-head">
+              <span class="warning-icon" aria-hidden="true">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="2.2"
+                     stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                  <line x1="12" y1="9" x2="12" y2="13"/>
+                  <line x1="12" y1="17" x2="12.01" y2="17"/>
+                </svg>
+              </span>
+              <h3>Unsupported page</h3>
+            </div>
+            <p class="warning-body" id="warning-body">
+              This extension only runs on specific NSR LossControl360 forms.
+            </p>
+            <div class="warning-list">
+              <div class="warning-list-title">Supported forms</div>
+              <ul id="supported-list"></ul>
+            </div>
+          </div>
+        </div>
+        <!-- ═════════ END FORM-REVIEW SUBPANEL ═════════ -->
+
+        <!-- ═════════ IMAGES SUBPANEL ═════════ -->
+        <div class="mode-panel" data-mode-panel="images">
+
+          <!-- Survey metadata card -->
+          <div class="card survey-meta-card" id="img-meta-card" style="display:none;">
+            <div class="meta-row">
+              <span class="meta-label">Survey</span>
+              <span id="meta-survey" class="meta-value">-</span>
+            </div>
+            <div class="meta-row">
+              <span class="meta-label">Insured</span>
+              <span id="meta-insured" class="meta-value">-</span>
+            </div>
+            <div class="meta-row">
+              <span class="meta-label">Policy</span>
+              <span id="meta-policy" class="meta-value">-</span>
+            </div>
+          </div>
+
+          <!-- Toolbar card: search, sort, actions -->
+          <div class="card toolbar-card" id="img-toolbar-card" style="display:none;">
+            <div class="search-bar">
+              <svg class="search-icon" width="14" height="14" viewBox="0 0 24 24"
+                   fill="none" stroke="currentColor" stroke-width="2"
+                   stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <circle cx="11" cy="11" r="8"/>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+              </svg>
+              <input type="text" id="img-search" placeholder="Filter by label…" />
+              <span id="img-count" class="image-count">0</span>
+            </div>
+
+            <div class="sort-controls">
+              <span class="sort-label">Sort on page</span>
+              <div class="sort-buttons">
+                <button class="sort-btn is-active" data-sort="original" id="btn-sort-original">Original</button>
+                <button class="sort-btn is-disabled" data-sort="api" id="btn-sort-api" disabled>AI Sort</button>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Inline progress strip (image pipeline) -->
+          <div class="card progress-card" id="img-progress-card" style="display:none;">
+            <div class="progress-header">
+              <span id="img-progress-label" class="progress-label">Processing…</span>
+              <span id="img-progress-count" class="progress-count">0 / 0</span>
+            </div>
+            <div class="progress-track">
+              <div id="img-progress-bar" class="progress-fill" style="width:0%"></div>
+            </div>
+            <div id="img-progress-detail" class="progress-detail">Initializing…</div>
+          </div>
+
+          <!-- Image gallery -->
+          <div class="card gallery-card" id="img-gallery-card" style="display:none;">
+            <div id="img-gallery" class="image-gallery"></div>
+          </div>
+
+          <!-- Primary CTA for the image pipeline -->
+          <div id="img-footer" style="display:none;">
+            <button class="btn btn-primary" id="btn-img-describe">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                   stroke="currentColor" stroke-width="2.4"
+                   stroke-linecap="round" stroke-linejoin="round">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                <circle cx="12" cy="12" r="3"/>
+              </svg>
+              <span>Display Image Description</span>
+            </button>
+          </div>
+
+          <!-- Unsupported/error notice for the Images flow -->
+          <div class="card warning-card" id="img-status-card" style="display:none;">
+            <div class="warning-head">
+              <span class="warning-icon" aria-hidden="true">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="2.2"
+                     stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                  <line x1="12" y1="9" x2="12" y2="13"/>
+                  <line x1="12" y1="17" x2="12.01" y2="17"/>
+                </svg>
+              </span>
+              <h3 id="img-status-title">Not on Order Photos page</h3>
+            </div>
+            <p class="warning-body" id="img-status-body">
+              Navigate to a LossControl360 survey's <strong>Order Photos</strong> view to extract images.
+            </p>
+          </div>
+        </div>
+        <!-- ═════════ END IMAGES SUBPANEL ═════════ -->
+
+      </section>
+
+      <!-- ═════════ ACTIVITY TAB ═════════ -->
+      <section class="tab-panel" data-panel="activity">
+        <div class="card">
+          <div class="activity-head">
+            <h2>Activity Log</h2>
+            <button class="btn-text" id="btn-clear-log">Clear</button>
+          </div>
+          <div class="activity-list" id="activity-list">
+            <div class="empty-state">
+              <div class="empty-icon">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="1.6"
+                     stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="4" y="3" width="16" height="18" rx="2"/>
+                  <line x1="8" y1="8" x2="16" y2="8"/>
+                  <line x1="8" y1="12" x2="16" y2="12"/>
+                  <line x1="8" y1="16" x2="13" y2="16"/>
+                </svg>
+              </div>
+              <p>No activity yet</p>
+              <span>Events will appear here as you sync forms.</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ═════════ CONFIG TAB ═════════ -->
+      <section class="tab-panel" data-panel="config">
+        <div class="card">
+          <h2 style="margin-bottom:8px;">Configuration</h2>
+          <p style="color:var(--text-muted); font-size:13px; margin-bottom:16px;">
+            Connection settings for the AI backends.
+          </p>
+
+          <div class="form-row">
+            <label class="form-label" for="cfg-backend">Form-verify backend</label>
+            <input class="form-input" id="cfg-backend" type="text"
+                   value="http://****/verify-direct" readonly />
+            <span class="form-hint">Configured at install time.</span>
+          </div>
+
+          <div class="form-row">
+            <label class="form-label" for="cfg-images-backend">Image-verify backend</label>
+            <input class="form-input" id="cfg-images-backend" type="text"
+                   value="http://****/pipeline" readonly />
+            <span class="form-hint">Configured at install time.</span>
+          </div>
+
+          <h3 class="config-subhead">Answer-block colours</h3>
+          <p style="color:var(--text-muted); font-size:12.5px; margin-bottom:12px;">
+            Customise the tint of each answer card in the AI review queue.
+            Changes apply immediately.
+          </p>
+
+          <div class="color-row">
+            <div class="color-row-info">
+              <span class="color-swatch" id="swatch-form" aria-hidden="true"></span>
+              <div>
+                <div class="color-row-title">Page / Form AI</div>
+                <div class="color-row-sub">Tint for the page-extracted suggestion.</div>
+              </div>
+            </div>
+            <div class="color-row-controls">
+              <input type="color" id="cfg-color-form" class="color-input" value="#eef4ff" />
+              <button class="btn-text color-reset" data-target="form">Reset</button>
+            </div>
+          </div>
+
+          <div class="color-row">
+            <div class="color-row-info">
+              <span class="color-swatch" id="swatch-image" aria-hidden="true"></span>
+              <div>
+                <div class="color-row-title">AI Suggestion</div>
+                <div class="color-row-sub">Tint for the image-derived suggestion.</div>
+              </div>
+            </div>
+            <div class="color-row-controls">
+              <input type="color" id="cfg-color-image" class="color-input" value="#ede9fe" />
+              <button class="btn-text color-reset" data-target="image">Reset</button>
+            </div>
+          </div>
+
+          <div class="color-row">
+            <div class="color-row-info">
+              <span class="color-swatch" id="swatch-current" aria-hidden="true"></span>
+              <div>
+                <div class="color-row-title">Current</div>
+                <div class="color-row-sub">Tint for the currently-saved form value.</div>
+              </div>
+            </div>
+            <div class="color-row-controls">
+              <input type="color" id="cfg-color-current" class="color-input" value="#f8fafc" />
+              <button class="btn-text color-reset" data-target="current">Reset</button>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- ═════════ FOOTER ═════════ -->
+  <footer class="footer">
+    <span class="conn">
+      <span class="conn-dot" id="conn-dot"></span>
+      <span id="conn-text">Idle</span>
+    </span>
+    <span class="footer-right">
+      <span class="footer-credit" title="Powered by DhanInfo">
+        <img src="../icons/dhaninfo_logo.jpg" alt="DhanInfo" class="footer-logo" />
+      </span>
+      <span class="footer-sep" aria-hidden="true">|</span>
+      <span class="version">v 4.0.0</span>
+    </span>
+  </footer>
+
+  <!-- Toast for transient feedback -->
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <!-- Registry first: forms.js attaches window.NSR_FORMS, which sidepanel.js
+       reads to render the case-type-aware "Supported forms" list. -->
+  <script src="../common/forms.js"></script>
+  <script src="sidepanel.js"></script>
+</body>
+</html>

@@ -1,0 +1,1665 @@
+/* ═════════════════════════════════════════════════════════════════
+   Smart Fill - side panel styles
+   Premium SaaS look inspired by the reference screenshot:
+     · soft neutral background
+     · paper-white cards with subtle 1px borders
+     · accent blue used sparingly for primary actions and progress
+     · vertical icon-rail navigation on the left of the content
+   ═════════════════════════════════════════════════════════════════ */
+
+:root {
+  /* Surfaces */
+  --bg:           #f8fafc;
+  --card:         #ffffff;
+  --card-hover:   #fbfdff;
+  --canvas-bg:    #f7f8fb;
+
+  /* Borders */
+  --border:        #e6e8ee;
+  --border-strong: #d4d8e0;
+
+  /* Text */
+  --text:        #0f1729;
+  --text-muted:  #5b667a;
+  --text-faint:  #97a1b3;
+
+  /* Brand */
+  --primary:        #2466eb;
+  --primary-hover:  #1e54c9;
+  --primary-soft:   #eef4ff;
+
+  /* Semantic */
+  --success:       #10b981;
+  --success-soft:  #d1fae5;
+  --warning:       #f59e0b;
+  --warning-soft:  #fef3c7;
+  --danger:        #ef4444;
+  --danger-soft:   #fee2e2;
+  --amber:         #f59e0b;
+  --rose:          #b91c1c;
+
+  /* Light purple accent - replaces the previous orange/amber accents in
+     the AI suggestion area. Used for "needs review" left-border on cards,
+     the pending status pill, the AI REVIEW heading icon background, and
+     the "Different" filter dot / default suggestion left-border. */
+  --purple:        #a78bfa;
+  --purple-strong: #8b5cf6;
+  --purple-soft:   #ede9fe;
+  --purple-text:   #5b21b6;
+
+  /* User-configurable answer-block tints. These can be overridden at
+     runtime from the Config tab; the defaults match the original palette
+     so removing the override returns the cards to their original look. */
+  --cfg-form-bg:    #eef4ff;
+  --cfg-image-bg:   #ede9fe;
+  --cfg-current-bg: #f8fafc;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.04);
+  --shadow:    0 4px 14px rgba(15, 23, 42, 0.06);
+  --shadow-lg: 0 12px 40px rgba(15, 23, 42, 0.08);
+
+  /* Misc */
+  --radius:    14px;
+  --radius-sm: 10px;
+  --radius-xs: 6px;
+
+  --font-sans: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI',
+               Roboto, Helvetica, Arial, sans-serif;
+}
+
+/* Reset */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  height: 100%;
+  font-family: var(--font-sans);
+  font-size: 14px;
+  color: var(--text);
+  background: var(--bg);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/*
+ * The Chrome side-panel API doesn't accept a fixed width - the user resizes
+ * the panel by hand. The layout below is designed for a sweet spot of
+ * ~640px (≈ 40% of a 1600px display), and remains usable down to 380px and
+ * up to 900+px without breaking. The values below set guard-rails:
+ *   · min-width 380px → keeps the rail + main grid readable on narrow panels
+ *   · sensible max-width inside cards so prose doesn't wrap awkwardly when
+ *     the user drags the panel wide
+ */
+body {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  min-width: 380px;
+}
+
+button { font-family: inherit; cursor: pointer; border: 0; background: transparent; }
+button:disabled { cursor: not-allowed; opacity: 0.55; }
+input, textarea, select { font-family: inherit; }
+ul { list-style: none; }
+h1, h2, h3 { font-weight: 600; letter-spacing: -0.2px; }
+
+/* ── Top bar ────────────────────────────────────────────────── */
+.top-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--border);
+  background: var(--card);
+}
+.brand { display: flex; align-items: center; gap: 10px; }
+.brand-icon {
+  width: 30px; height: 30px;
+  border-radius: 9px;
+  background: linear-gradient(135deg, var(--primary), #60a5fa);
+  color: #fff;
+  display: grid; place-items: center;
+  box-shadow: 0 2px 6px rgba(36, 102, 235, 0.28);
+}
+.brand h1 { font-size: 16px; font-weight: 700; letter-spacing: -0.3px; }
+.top-actions { display: flex; gap: 4px; }
+.icon-button {
+  width: 32px; height: 32px;
+  border-radius: 8px;
+  color: var(--text-muted);
+  display: grid; place-items: center;
+  transition: background 120ms, color 120ms;
+}
+.icon-button:hover { background: var(--primary-soft); color: var(--primary); }
+
+/* ── Grid: rail + main ──────────────────────────────────────── */
+.grid {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 64px 1fr;
+  min-height: 0;
+}
+
+/* ── Vertical nav rail ───────────────────────────────────────── */
+.rail {
+  background: var(--card);
+  border-right: 1px solid var(--border);
+  padding: 14px 8px;
+  display: flex; flex-direction: column; gap: 6px;
+}
+.rail-tab {
+  width: 100%;
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  padding: 10px 4px;
+  border-radius: 10px;
+  color: var(--text-muted);
+  font-size: 11px; font-weight: 500; letter-spacing: 0.1px;
+  transition: background 120ms, color 120ms, transform 120ms;
+}
+.rail-tab svg { transition: transform 160ms; }
+.rail-tab:hover { background: var(--primary-soft); color: var(--primary); }
+.rail-tab.is-active {
+  background: var(--primary-soft);
+  color: var(--primary);
+  box-shadow: inset 0 0 0 1px rgba(36, 102, 235, 0.18);
+}
+.rail-tab.is-active svg { transform: scale(1.05); }
+
+/* ── Main panel ──────────────────────────────────────────────── */
+.main {
+  padding: 16px;
+  overflow-y: auto;
+  display: flex; flex-direction: column;
+  gap: 14px;
+}
+
+/* Tab panels */
+.tab-panel { display: none; flex-direction: column; gap: 14px; }
+.tab-panel.is-active { display: flex; }
+
+/* ── Cards ───────────────────────────────────────────────────── */
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  box-shadow: var(--shadow-sm);
+}
+
+/* ── Detection card ──────────────────────────────────────────── */
+.detection-card { padding: 14px 16px; }
+.detection-row {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+}
+.detection-left { min-width: 0; }
+.detection-label {
+  text-transform: uppercase;
+  font-size: 10.5px;
+  letter-spacing: 1.4px;
+  color: var(--text-faint);
+  font-weight: 600;
+}
+.detection-name {
+  font-size: 14.5px; font-weight: 600;
+  margin-top: 2px;
+  color: var(--text);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.detection-url {
+  margin-top: 10px;
+  font-size: 11px;
+  color: var(--text-faint);
+  font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.detection-surveytype-block {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border, rgba(0,0,0,0.08));
+}
+.detection-surveytype {
+  font-size: 14px; font-weight: 600;
+  margin-top: 2px;
+  color: var(--text);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+
+/* ── Status card ─────────────────────────────────────────────── */
+.status-head {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 4px;
+}
+.status-head h2 { font-size: 15px; }
+/* Description line is intentionally hidden - element kept in DOM so the
+   existing pipeline can keep assigning textContent without errors. */
+.status-desc { display: none !important; }
+.status-card .status-head { margin-bottom: 12px; }
+
+.canvas {
+  position: relative;
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--canvas-bg);
+  border: 1px solid var(--border);
+  min-height: 240px;
+  display: grid; place-items: center;
+}
+.canvas-bg {
+  position: absolute; inset: 0;
+  background-image:
+    linear-gradient(rgba(15, 23, 42, 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(15, 23, 42, 0.06) 1px, transparent 1px);
+  background-size: 32px 32px;
+  opacity: 0.5;
+}
+.canvas-inner {
+  position: relative; z-index: 1;
+  display: flex; flex-direction: column; align-items: center;
+  padding: 28px 20px;
+  text-align: center;
+}
+.canvas-ring {
+  position: relative;
+  width: 92px;
+  height: 92px;
+  margin-bottom: 16px;
+}
+.canvas-ring svg {
+  width: 92px;
+  height: 92px;
+  display: block;
+}
+.ring-track {
+  fill: none;
+  stroke: rgba(36, 102, 235, 0.14);
+  stroke-width: 4.5;
+}
+.ring-progress {
+  fill: none;
+  stroke: var(--primary);
+  stroke-width: 4.5;
+  stroke-linecap: round;
+  /* 2π * 28 ≈ 175.93 */
+  stroke-dasharray: 175.93;
+  stroke-dashoffset: 175.93;
+  transform: rotate(-90deg);
+  transform-origin: center;
+  transition: stroke-dashoffset 480ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+.ring-icon {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--primary);
+  pointer-events: none;
+}
+.ring-icon svg {
+  /* Override the .canvas-ring svg full-bleed rule above */
+  width: 28px;
+  height: 28px;
+}
+
+/* Optional spinning state - added by JS during the 'uploading' / 'analyzing'
+   stages to make the ring feel alive while progress is indeterminate. */
+.canvas-ring.is-spinning .ring-progress {
+  animation: nsr-ring-spin 1.4s linear infinite;
+}
+@keyframes nsr-ring-spin {
+  0%   { transform: rotate(-90deg); }
+  100% { transform: rotate(270deg); }
+}
+
+.canvas-title {
+  font-size: 16px; font-weight: 600;
+  letter-spacing: -0.2px;
+  color: var(--text);
+}
+.canvas-subtitle {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-top: 6px;
+  max-width: 260px;
+  line-height: 1.45;
+}
+.canvas-progress {
+  margin-top: 14px;
+  font-size: 11.5px;
+  letter-spacing: 1.4px;
+  color: var(--primary);
+  font-weight: 700;
+}
+
+/* ── Buttons ─────────────────────────────────────────────────── */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 11px 14px;
+  border-radius: 10px;
+  font-size: 13.5px; font-weight: 600;
+  transition: background 140ms, transform 80ms, box-shadow 140ms, color 140ms;
+  margin-top: 14px;
+}
+.btn:active { transform: translateY(1px); }
+.btn-primary {
+  background: var(--primary);
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(36, 102, 235, 0.22);
+}
+.btn-primary:hover { background: var(--primary-hover); }
+.btn-primary:disabled { background: var(--text-faint); box-shadow: none; }
+
+.btn-ghost {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 12.5px; font-weight: 600;
+  background: var(--primary);
+  color: #fff;
+  transition: background 140ms;
+}
+.btn-ghost:hover { background: var(--primary-hover); }
+
+.btn-text {
+  padding: 8px 8px;
+  font-size: 12.5px; font-weight: 600;
+  color: var(--text-muted);
+  border-radius: 6px;
+  transition: background 120ms, color 120ms;
+}
+.btn-text:hover { background: var(--bg); color: var(--text); }
+
+/* Accept-all gets a subtle green tint to distinguish it from Reject-all,
+   which sits next to it in the bulk-bar. Both are still .btn-text so the
+   layout/sizing matches; only the rest state color shifts. */
+#btn-accept-all { color: var(--success); }
+#btn-accept-all:hover { background: var(--success-soft); color: #047857; }
+
+/* ── Badges ──────────────────────────────────────────────────── */
+.badge {
+  display: inline-block;
+  padding: 4px 9px;
+  border-radius: 999px;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 1.1px;
+  text-transform: uppercase;
+}
+.badge-idle      { background: var(--bg); color: var(--text-muted); }
+.badge-progress  { background: var(--primary-soft); color: var(--primary); }
+.badge-success   { background: var(--success-soft); color: #047857; }
+.badge-error     { background: var(--danger-soft); color: #b91c1c; }
+.badge-warning   { background: var(--warning-soft); color: #92400e; }
+
+/* ── Stat grid ───────────────────────────────────────────────── */
+.stat-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.stat-cell {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 12px 14px;
+  display: flex; align-items: center; gap: 10px;
+}
+.stat-icon {
+  width: 28px; height: 28px;
+  border-radius: 8px;
+  display: grid; place-items: center;
+}
+.stat-icon-amber { background: var(--warning-soft); color: var(--amber); }
+.stat-icon-rose  { background: var(--danger-soft);  color: var(--rose); }
+.stat-label {
+  font-size: 10px; letter-spacing: 1.4px;
+  color: var(--text-faint); font-weight: 600;
+  text-transform: uppercase;
+}
+.stat-value { font-size: 14px; font-weight: 600; margin-top: 2px; }
+
+/* ── Queue / suggestions ─────────────────────────────────────── */
+.queue-card { padding: 16px; }
+
+/* Header row: title block on the left, bulk actions on the right. */
+.queue-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+}
+.queue-title-block { min-width: 0; flex: 1 1 auto; }
+.queue-title {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 11px; letter-spacing: 1.4px;
+  color: var(--text-faint); font-weight: 700;
+}
+/* Subtitle: '2 to review · 1 accepted · 0 rejected' - replaces the old pills */
+.queue-summary {
+  margin-top: 6px;
+  font-size: 12.5px;
+  color: var(--text-muted);
+  font-weight: 500;
+  line-height: 1.4;
+}
+.queue-summary span { color: var(--text); font-weight: 600; }
+.queue-summary .dot-sep {
+  color: var(--text-faint);
+  font-weight: 400;
+  margin: 0 6px;
+}
+
+.bulk-bar {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+  align-items: center;
+}
+
+/* ── Filter tabs (All / Different / Matched) ─────────────────── */
+.filter-tabs {
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  background: var(--bg);
+  border-radius: 10px;
+  margin-bottom: 12px;
+}
+.filter-tab {
+  flex: 1;
+  display: inline-flex; align-items: center; justify-content: center;
+  gap: 6px;
+  padding: 7px 10px;
+  border-radius: 7px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-muted);
+  background: transparent;
+  transition: background 140ms, color 140ms, box-shadow 140ms;
+  white-space: nowrap;
+}
+.filter-tab:hover:not(.is-active) {
+  color: var(--text);
+  background: rgba(15, 23, 42, 0.04);
+}
+.filter-tab.is-active {
+  background: var(--card);
+  color: var(--text);
+  box-shadow: var(--shadow-sm), 0 0 0 1px var(--border);
+}
+.filter-count {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.06);
+  color: var(--text-muted);
+  min-width: 20px;
+  text-align: center;
+}
+.filter-tab.is-active .filter-count {
+  background: var(--primary-soft);
+  color: var(--primary);
+}
+.filter-dot {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  display: inline-block;
+  flex-shrink: 0;
+}
+.filter-dot-different { background: var(--purple); }
+.filter-dot-matched   { background: var(--success); }
+
+.suggestion-list {
+  display: flex; flex-direction: column; gap: 10px;
+  max-height: 60vh;
+  overflow-y: auto;
+  padding-right: 2px;
+}
+
+/* Single suggestion card.
+   Default border-left = light purple, reflecting "AI suggests a change".
+   The is-matched, is-accepted, is-rejected modifiers re-color appropriately. */
+.suggestion {
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--purple);
+  border-radius: var(--radius-sm);
+  background: var(--card);
+  padding: 12px;
+  display: flex; flex-direction: column; gap: 10px;
+  transition: border-color 140ms, background 140ms, transform 140ms;
+  cursor: pointer;
+  animation: card-in 240ms ease-out both;
+}
+@keyframes card-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.suggestion:hover { background: var(--card-hover); border-color: var(--border-strong); }
+.suggestion.is-pending  { border-left-color: var(--purple); }
+.suggestion.is-accepted-form     { border-left-color: var(--primary); background: #fafcff; }
+.suggestion.is-accepted-image    { border-left-color: var(--purple);  background: #faf8ff; }
+.suggestion.is-accepted-verified { border-left-color: var(--success); background: #f6fefb; }
+.suggestion.is-rejected { border-left-color: var(--text-faint); background: #fafafa; opacity: 0.85; }
+.suggestion.is-matched  { border-left-color: var(--success); }
+
+.suggestion-head {
+  display: flex; align-items: flex-start; justify-content: space-between;
+  gap: 8px;
+}
+.suggestion-section {
+  font-size: 10.5px; letter-spacing: 1.2px;
+  color: var(--text-faint); text-transform: uppercase;
+  font-weight: 600;
+}
+.suggestion-question {
+  font-size: 13px; font-weight: 600;
+  color: var(--text);
+  margin-top: 4px;
+  line-height: 1.4;
+}
+.suggestion-status {
+  font-size: 10px; letter-spacing: 1px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  font-weight: 700;
+  text-transform: uppercase;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+.suggestion-status.is-pending  { background: var(--purple-soft); color: var(--purple-text); }
+.suggestion-status.is-accepted { background: var(--success-soft); color: #047857; }
+.suggestion-status.is-rejected { background: var(--bg);            color: var(--text-muted); }
+.suggestion-status.is-matched  { background: var(--success-soft);  color: #047857; }
+
+.answer-row {
+  display: grid;
+  grid-template-columns: 1fr 16px 1fr;
+  align-items: stretch;
+  gap: 6px;
+  font-size: 12px;
+}
+.answer-cell {
+  border-radius: 8px;
+  padding: 8px 10px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+}
+.answer-cell.is-prev { color: var(--danger); background: #fff5f5; border-color: #fee4e4; }
+.answer-cell.is-next { color: #047857;       background: #f0fdf6; border-color: #d4f1e1; }
+.answer-cell .answer-label {
+  font-size: 9.5px; letter-spacing: 1.2px;
+  text-transform: uppercase;
+  font-weight: 700;
+  opacity: 0.7;
+  margin-bottom: 3px;
+}
+.answer-cell .answer-value {
+  font-size: 12px;
+  font-weight: 600;
+  word-break: break-word;
+  line-height: 1.4;
+}
+.answer-arrow {
+  display: grid; place-items: center;
+  color: var(--text-faint);
+  font-weight: 700;
+}
+
+/* ── Source photos (AI evidence) ─────────────────────────────── */
+.source-photos {
+  margin-top: 8px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: var(--bg);
+  border: 1px dashed var(--border);
+}
+.source-photos-label {
+  font-size: 9.5px;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+}
+.source-photos-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+.source-photo-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  font-family: inherit;
+  line-height: 1.4;
+  color: var(--primary);
+  background: var(--primary-soft);
+  border: 1px solid transparent;
+  text-decoration: none;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  transition: background 120ms, border-color 120ms, transform 80ms;
+}
+.source-photo-link:hover {
+  background: #dbeafe;
+  border-color: var(--primary);
+}
+.source-photo-link:active { transform: translateY(1px); }
+.source-photo-link svg { flex-shrink: 0; }
+
+/* "Related pages" pills - non-interactive informational tags shown below
+   the Source photos block. Use a muted tone so they stay subordinate to
+   the clickable photo links above them. */
+.source-label-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  background: var(--bg-elevated, var(--bg));
+  border: 1px solid var(--border);
+}
+.source-label-pill svg { flex-shrink: 0; opacity: 0.8; }
+
+.suggestion-actions {
+  display: flex; gap: 6px; justify-content: flex-end;
+}
+.action-btn {
+  padding: 6px 11px;
+  border-radius: 7px;
+  font-size: 12px;
+  font-weight: 600;
+  transition: background 120ms, color 120ms, transform 80ms;
+}
+.action-btn:active { transform: translateY(1px); }
+.action-accept     { background: var(--success); color: #fff; }
+.action-accept:hover { background: #059669; }
+.action-reject     { background: var(--bg); color: var(--text-muted); border: 1px solid var(--border); }
+.action-reject:hover { background: #f0f2f6; color: var(--text); }
+.action-reconsider { background: var(--primary-soft); color: var(--primary); }
+.action-reconsider:hover { background: #dbeafe; }
+
+/* ═════════════════════════════════════════════════════════════════
+   Verify-answer redesign - answer blocks, banners, references row.
+   The existing .answer-row / .answer-cell / .answer-arrow rules above
+   are LEGACY (kept for safety; remove in a follow-up cleanup once the
+   new layout has shipped). Nothing in the new flow renders them.
+   ═════════════════════════════════════════════════════════════════ */
+
+/* Conflict header - small light-purple chip above the 3 blocks in Case A.
+   Tells the user at a glance that the two AI passes disagreed. */
+.conflict-header {
+  display: flex; align-items: center; gap: 8px;
+  padding: 7px 10px;
+  border-radius: 8px;
+  background: var(--purple-soft);
+  color: var(--purple-text);
+  font-size: 11.5px;
+  font-weight: 600;
+  line-height: 1.35;
+}
+.conflict-header svg { flex-shrink: 0; }
+
+/* Applied banner - strip across the top of a card after the user has
+   taken an action. Reuses the semantic colour tokens. */
+.applied-banner {
+  display: flex; align-items: center; gap: 8px;
+  padding: 7px 10px;
+  border-radius: 8px;
+  font-size: 11.5px;
+  font-weight: 600;
+  line-height: 1.35;
+}
+.applied-banner.banner-success { background: var(--success-soft); color: #047857; }
+.applied-banner.banner-muted   { background: var(--bg);           color: var(--text-muted); }
+.applied-banner svg { flex-shrink: 0; }
+
+/* The grid that holds the answer blocks. blocks-3 is Case A, blocks-2
+   is Case B / Case C, blocks-1 is post-action / rejected.
+   Falls back to a single column under ~420px so narrow side panels
+   stay readable. */
+.suggestion-blocks {
+  display: grid;
+  gap: 8px;
+}
+.suggestion-blocks.blocks-1 { grid-template-columns: 1fr; }
+.suggestion-blocks.blocks-2 { grid-template-columns: 1fr 1fr; }
+.suggestion-blocks.blocks-3 { grid-template-columns: 1fr 1fr 1fr; }
+@media (max-width: 540px) {
+  .suggestion-blocks.blocks-2,
+  .suggestion-blocks.blocks-3 { grid-template-columns: 1fr; }
+}
+
+/* The reusable answer-block component.
+   Same shape for every kind; the modifier supplies the colour palette. */
+.answer-block {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 9px 11px;
+  background: var(--card);
+  display: flex; flex-direction: column; gap: 4px;
+  min-width: 0;
+  transition: border-color 140ms, background 140ms;
+}
+.answer-block-head {
+  display: flex; align-items: center; gap: 5px;
+  font-size: 9px;
+  letter-spacing: 0.7px;
+  text-transform: uppercase;
+  font-weight: 600;
+  opacity: 0.75;
+}
+.answer-block-icon { display: inline-grid; place-items: center; }
+.answer-block-title { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.answer-block-value {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1.45;
+  word-break: break-word;
+  margin-top: 4px;
+}
+.answer-block-helper {
+  font-size: 10px;
+  color: var(--text-faint);
+  line-height: 1.35;
+  margin-top: 3px;
+  font-weight: 400;
+  opacity: 0.85;
+}
+
+/* Kind modifiers - each gets its own soft tint + accent.
+     current   neutral (the reference point)
+     form      blue    (data extracted from form pages)
+     image     purple  (data inferred from images - different source)
+     verified  green   (both passes agree - strongest affordance)
+   Backgrounds use CSS variables that can be overridden from Config. */
+.answer-block--current {
+  background: var(--cfg-current-bg);
+  border-color: var(--border);
+}
+.answer-block--current .answer-block-head { color: var(--text-muted); }
+
+.answer-block--form {
+  background: var(--cfg-form-bg);
+  border-color: #d6e3fd;
+}
+.answer-block--form .answer-block-head { color: var(--primary); }
+
+.answer-block--image {
+  background: var(--cfg-image-bg);
+  border-color: #d8ccfa;
+}
+.answer-block--image .answer-block-head { color: var(--purple-text); }
+
+.answer-block--verified {
+  background: var(--success-soft);
+  border-color: #b6ecd2;
+}
+.answer-block--verified .answer-block-head { color: #047857; }
+.answer-block--verified .answer-block-icon { color: var(--success); }
+
+/* Matched-row - compact one-line layout for questions that are
+   already correct. Lives under the Matched filter tab. */
+.matched-row {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: var(--success-soft);
+  border: 1px solid #b6ecd2;
+}
+.matched-icon {
+  width: 22px; height: 22px;
+  border-radius: 999px;
+  background: #fff;
+  color: var(--success);
+  display: grid; place-items: center;
+  flex-shrink: 0;
+}
+.matched-text { min-width: 0; }
+.matched-title {
+  font-size: 10px; letter-spacing: 0.8px;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: #047857;
+}
+.matched-value {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text);
+  word-break: break-word;
+  line-height: 1.4;
+  margin-top: 1px;
+}
+
+/* References row - groups source-photos and source-labels under the
+   answer blocks. Each child keeps its existing pill / link treatment. */
+.references-row {
+  display: flex; flex-direction: column; gap: 6px;
+}
+
+/* Action button additions for the new pass-specific applies. The
+   existing .action-accept / .action-reject / .action-reconsider are
+   reused where they make sense. */
+.action-apply-form {
+  background: var(--primary); color: #fff;
+}
+.action-apply-form:hover { background: var(--primary-hover); }
+.action-apply-image {
+  background: var(--purple-strong); color: #fff;
+}
+.action-apply-image:hover { background: #7c3aed; }
+.action-apply-verified {
+  background: var(--success); color: #fff;
+}
+.action-apply-verified:hover { background: #059669; }
+
+/* Status pill colour additions for the new sub-states. */
+.suggestion-status.is-accepted { background: var(--success-soft); color: #047857; }
+
+/* Card-level dimming after an action keeps the post-action card
+   visually present but recessed, so the eye stays on pending work. */
+.suggestion.is-accepted-form .answer-block--form,
+.suggestion.is-accepted-image .answer-block--image,
+.suggestion.is-accepted-verified .answer-block--verified {
+  border-width: 1.5px;
+}
+
+/* ═════════════════════════════════════════════════════════════════
+   End verify-answer redesign
+   ═════════════════════════════════════════════════════════════════ */
+
+/* ── Warning card ────────────────────────────────────────────── */
+.warning-card { border-left: 3px solid var(--warning); }
+.warning-head { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+.warning-icon {
+  width: 30px; height: 30px;
+  background: var(--warning-soft);
+  color: var(--amber);
+  border-radius: 8px;
+  display: grid; place-items: center;
+}
+.warning-head h3 { font-size: 14px; font-weight: 600; }
+.warning-body { color: var(--text-muted); font-size: 13px; margin-bottom: 12px; line-height: 1.5; }
+.warning-list {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 12px;
+}
+.warning-list-title {
+  font-size: 10.5px; letter-spacing: 1.3px;
+  text-transform: uppercase;
+  color: var(--text-faint); font-weight: 700;
+  margin-bottom: 10px;
+}
+.warning-list ul { list-style: none; margin: 0; padding: 0; }
+
+/* Base row reset - specific row types below opt back into layout. */
+.warning-list ul li {
+  font-size: 12.5px;
+  color: var(--text);
+}
+
+/* Case-type group heading. */
+.warning-list ul li.supported-group {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 8px;
+  margin: 14px 0 7px;
+}
+.warning-list ul li.supported-group:first-child { margin-top: 0; }
+.supported-group-name {
+  font-size: 10.5px; letter-spacing: .6px; text-transform: uppercase;
+  font-weight: 700; color: var(--text-faint);
+}
+.warning-list ul li.supported-group.is-active .supported-group-name {
+  color: var(--primary);
+}
+.supported-group-tag {
+  font-size: 9.5px; font-weight: 700; letter-spacing: .3px;
+  text-transform: uppercase;
+  padding: 2px 8px; border-radius: 999px; white-space: nowrap;
+}
+.supported-group-tag.tag-here {
+  background: var(--success-soft); color: #047857;
+}
+.supported-group-tag.tag-other {
+  background: rgba(148,163,184,.16); color: #64748b;
+}
+
+/* Individual form row: a card with the name + a "detected here" badge on
+   top, and the flow description beneath. Mirrors the .image-card look. */
+.warning-list ul li.supported-form {
+  display: flex; flex-direction: column; gap: 3px;
+  padding: 8px 10px;
+  margin-bottom: 6px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xs);
+}
+.warning-list ul li.supported-form:last-of-type { margin-bottom: 0; }
+.supported-form-name {
+  display: flex; align-items: center; gap: 7px; flex-wrap: wrap;
+  font-weight: 600; color: var(--text); font-size: 12.5px;
+}
+.supported-form-match {
+  font-weight: 700; color: #047857; font-size: 9.5px;
+  letter-spacing: .3px; text-transform: uppercase;
+  background: var(--success-soft);
+  padding: 2px 7px; border-radius: 999px;
+}
+.supported-form-flow {
+  font-size: 11px; color: var(--text-muted);
+  display: flex; align-items: center; gap: 5px;
+}
+.supported-form-flow::before {
+  content: ''; width: 5px; height: 5px; border-radius: 50%;
+  background: var(--primary); flex-shrink: 0; opacity: .55;
+}
+
+/* The form that matched the current page header - lift it with the primary
+   accent so the inspector sees the active form at a glance. */
+.warning-list ul li.supported-form.is-detected {
+  background: var(--primary-soft);
+  border-color: var(--primary);
+}
+
+/* Explanatory footer note about case-type gating. */
+.warning-list ul li.supported-note {
+  margin-top: 12px; padding-top: 10px;
+  border-top: 1px solid var(--border);
+  font-size: 11px; line-height: 1.45;
+  color: var(--text-faint);
+}
+
+/* ── Activity tab ────────────────────────────────────────────── */
+.activity-head {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 10px;
+}
+.activity-head h2 { font-size: 15px; }
+.activity-list {
+  display: flex; flex-direction: column; gap: 4px;
+  max-height: 65vh; overflow-y: auto;
+}
+.activity-item {
+  display: flex; align-items: flex-start; gap: 10px;
+  padding: 10px 4px;
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+}
+.activity-item:last-child { border-bottom: 0; }
+.activity-time {
+  color: var(--text-faint);
+  font-size: 11px;
+  font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  flex-shrink: 0;
+  margin-top: 1px;
+  min-width: 56px;
+}
+.activity-message { color: var(--text); line-height: 1.4; }
+.activity-item.is-error .activity-message { color: var(--danger); }
+.activity-item.is-success .activity-message { color: #047857; }
+
+.empty-state {
+  display: flex; flex-direction: column; align-items: center;
+  text-align: center;
+  padding: 28px 20px;
+  color: var(--text-muted);
+}
+.empty-icon {
+  width: 48px; height: 48px; border-radius: 50%;
+  background: var(--bg);
+  display: grid; place-items: center;
+  color: var(--text-faint);
+  margin-bottom: 12px;
+}
+.empty-state p { font-size: 14px; font-weight: 600; color: var(--text); }
+.empty-state span { font-size: 12px; margin-top: 4px; }
+
+/* ── Config tab ──────────────────────────────────────────────── */
+.form-row { margin-bottom: 16px; }
+.form-label {
+  display: block;
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+  text-transform: uppercase;
+}
+.form-input {
+  width: 100%;
+  padding: 9px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  font-size: 13px;
+  background: var(--bg);
+  color: var(--text);
+}
+.form-input:focus { outline: 2px solid rgba(36, 102, 235, 0.25); border-color: var(--primary); }
+.form-hint { display: block; font-size: 11.5px; color: var(--text-faint); margin-top: 4px; }
+
+.switch {
+  display: inline-flex; align-items: center; gap: 10px;
+  cursor: pointer;
+}
+.switch input { display: none; }
+.switch-slider {
+  width: 34px; height: 20px;
+  background: var(--border);
+  border-radius: 999px;
+  position: relative;
+  transition: background 140ms;
+  flex-shrink: 0;
+}
+.switch-slider::after {
+  content: '';
+  position: absolute;
+  top: 2px; left: 2px;
+  width: 16px; height: 16px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+  transition: transform 140ms;
+}
+.switch input:checked + .switch-slider { background: var(--primary); }
+.switch input:checked + .switch-slider::after { transform: translateX(14px); }
+.switch-label { font-size: 13px; color: var(--text); }
+
+/* ── Sync-tab "Main" label (sits inside the status card, above the
+   Status heading, matching the look of the Detected-Form label inside
+   the detection card) ─────────────────────────────────────────── */
+.status-section-label {
+  text-transform: uppercase;
+  font-size: 10.5px;
+  letter-spacing: 1.4px;
+  color: var(--text-faint);
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+/* ── Config: subheading for grouped settings ─────────────────── */
+.config-subhead {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin: 18px 0 4px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+}
+
+/* ── Config: per-block colour pickers ────────────────────────── */
+.color-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--card);
+  margin-bottom: 8px;
+}
+.color-row-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+.color-swatch {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  border: 1px solid var(--border-strong);
+  background: var(--bg);
+  flex-shrink: 0;
+  box-shadow: var(--shadow-sm);
+}
+.color-row-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  line-height: 1.2;
+}
+.color-row-sub {
+  font-size: 11.5px;
+  color: var(--text-faint);
+  margin-top: 2px;
+  line-height: 1.3;
+}
+.color-row-controls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+.color-input {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 36px;
+  height: 28px;
+  border: 1px solid var(--border-strong);
+  border-radius: 6px;
+  padding: 0;
+  background: var(--card);
+  cursor: pointer;
+}
+.color-input::-webkit-color-swatch-wrapper { padding: 2px; }
+.color-input::-webkit-color-swatch { border: none; border-radius: 4px; }
+.color-input::-moz-color-swatch    { border: none; border-radius: 4px; }
+.color-reset {
+  font-size: 11.5px;
+  padding: 4px 8px;
+}
+
+/* ── Footer ──────────────────────────────────────────────────── */
+.footer {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 10px 18px;
+  border-top: 1px solid var(--border);
+  background: var(--card);
+  font-size: 11.5px;
+  color: var(--text-muted);
+}
+.conn { display: flex; align-items: center; gap: 6px; }
+.conn-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--text-faint);
+  transition: background 140ms;
+}
+.conn-dot.is-online { background: var(--success); box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.18); }
+.conn-dot.is-error  { background: var(--danger);  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.18); }
+.version { font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace; color: var(--text-faint); }
+
+/* ── Footer "Powered by DhanInfo" credit (bottom-right) ──────── */
+.footer-right {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+.footer-credit {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+.footer-logo {
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+  border-radius: 3px;
+  flex-shrink: 0;
+  display: block;
+}
+.footer-credit-text {
+  font-size: 11px;
+  color: var(--text-faint);
+  letter-spacing: 0.2px;
+  white-space: nowrap;
+}
+.footer-sep {
+  color: var(--border-strong);
+  font-weight: 400;
+  user-select: none;
+}
+
+/* On very narrow panels (~380px) hide the "by DhanInfo" text and keep
+   just the logo, so the right cluster stays compact. */
+@media (max-width: 440px) {
+  .footer-credit-text { display: none; }
+}
+
+/* ── Toast ───────────────────────────────────────────────────── */
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: 60px;
+  transform: translateX(-50%) translateY(20px);
+  background: #0f1729;
+  color: #fff;
+  padding: 10px 16px;
+  border-radius: 10px;
+  font-size: 12.5px;
+  font-weight: 500;
+  box-shadow: var(--shadow-lg);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 200ms, transform 200ms;
+  z-index: 100;
+}
+.toast.is-visible {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* ── Skeleton loaders ────────────────────────────────────────── */
+.skeleton {
+  background: linear-gradient(90deg, #eef0f4 0%, #f7f8fb 50%, #eef0f4 100%);
+  background-size: 200% 100%;
+  border-radius: 6px;
+  animation: skel 1.4s linear infinite;
+}
+@keyframes skel { to { background-position: -200% 0; } }
+.skeleton-line { height: 12px; margin-bottom: 8px; }
+.skeleton-line.short { width: 40%; }
+
+/* ── Scrollbar polish ────────────────────────────────────────── */
+.main::-webkit-scrollbar,
+.suggestion-list::-webkit-scrollbar,
+.activity-list::-webkit-scrollbar {
+  width: 8px;
+}
+.main::-webkit-scrollbar-thumb,
+.suggestion-list::-webkit-scrollbar-thumb,
+.activity-list::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+  border-radius: 999px;
+}
+.main::-webkit-scrollbar-track,
+.suggestion-list::-webkit-scrollbar-track,
+.activity-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   IMAGES TAB
+   Built from the same design tokens used by the Sync tab. New utilities
+   for the search bar, sort segmented control, and image gallery - all
+   re-using the existing card / badge / button / toast primitives.
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ── Survey metadata card ────────────────────────────────────────── */
+.survey-meta-card { padding: 12px 16px; }
+.survey-meta-card .meta-row {
+  display: flex; align-items: center; gap: 10px;
+  padding: 4px 0;
+}
+.survey-meta-card .meta-row + .meta-row {
+  border-top: 1px solid var(--border);
+}
+.survey-meta-card .meta-label {
+  font-size: 10.5px;
+  letter-spacing: 1.3px;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  font-weight: 700;
+  min-width: 60px;
+  flex-shrink: 0;
+}
+.survey-meta-card .meta-value {
+  font-size: 13px;
+  color: var(--text);
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ── Toolbar card: search + sort + secondary actions ─────────────── */
+.toolbar-card { padding: 12px; display: flex; flex-direction: column; gap: 10px; }
+
+.search-bar {
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 12px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  transition: border-color 140ms, box-shadow 140ms;
+}
+.search-bar:focus-within {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(36, 102, 235, 0.12);
+}
+.search-bar .search-icon { color: var(--text-faint); flex-shrink: 0; }
+.search-bar input {
+  flex: 1; min-width: 0;
+  border: 0;
+  background: transparent;
+  font-size: 13px;
+  color: var(--text);
+  outline: 0;
+}
+.search-bar input::placeholder { color: var(--text-faint); }
+.image-count {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--primary-soft);
+  color: var(--primary);
+  min-width: 24px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+/* Segmented sort control */
+.sort-controls {
+  display: flex; align-items: center; gap: 10px;
+}
+.sort-label {
+  font-size: 10.5px;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  font-weight: 700;
+  flex-shrink: 0;
+}
+.sort-buttons {
+  display: flex;
+  gap: 2px;
+  padding: 3px;
+  background: var(--bg);
+  border-radius: 9px;
+  flex: 1;
+}
+.sort-btn {
+  flex: 1;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+  background: transparent;
+  transition: background 140ms, color 140ms, box-shadow 140ms;
+  white-space: nowrap;
+}
+.sort-btn:hover:not(.is-active):not(.is-disabled) {
+  color: var(--text);
+  background: rgba(15, 23, 42, 0.04);
+}
+.sort-btn.is-active {
+  background: var(--card);
+  color: var(--text);
+  box-shadow: var(--shadow-sm), 0 0 0 1px var(--border);
+}
+.sort-btn.is-disabled,
+.sort-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* ── Progress card (Images pipeline) ─────────────────────────────── */
+.progress-card { padding: 14px 16px; }
+.progress-card .progress-header {
+  display: flex; justify-content: space-between; align-items: baseline;
+  margin-bottom: 8px;
+}
+.progress-card .progress-label {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text);
+}
+.progress-card .progress-count {
+  font-size: 11.5px;
+  color: var(--primary);
+  font-weight: 600;
+  font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+}
+.progress-track {
+  width: 100%;
+  height: 6px;
+  background: var(--bg);
+  border-radius: 3px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--primary), #60a5fa);
+  border-radius: 3px;
+  transition: width 0.3s ease;
+}
+.progress-detail {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 8px;
+  line-height: 1.4;
+}
+
+/* ── Image gallery ───────────────────────────────────────────────── */
+.gallery-card { padding: 8px; }
+.image-gallery {
+  display: flex; flex-direction: column;
+  gap: 6px;
+  max-height: 60vh;
+  overflow-y: auto;
+  padding-right: 2px;
+}
+.image-gallery::-webkit-scrollbar { width: 8px; }
+.image-gallery::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+  border-radius: 999px;
+}
+.image-gallery::-webkit-scrollbar-track { background: transparent; }
+
+.image-card {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 10px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: background 140ms, border-color 140ms, transform 100ms;
+  animation: card-in 200ms ease-out both;
+}
+.image-card:hover {
+  background: var(--card-hover);
+  border-color: var(--border-strong);
+}
+.image-card:active { transform: translateY(1px); }
+
+.image-card .card-index {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-faint);
+  min-width: 22px;
+  text-align: center;
+  flex-shrink: 0;
+  font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+}
+.image-card .card-thumb {
+  width: 52px; height: 52px;
+  border-radius: 7px;
+  overflow: hidden;
+  flex-shrink: 0;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  cursor: zoom-in;
+  transition: border-color 120ms, box-shadow 120ms, transform 100ms;
+}
+.image-card .card-thumb:hover {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px var(--primary-soft);
+}
+.image-card .card-thumb:active { transform: scale(0.97); }
+.image-card .card-thumb img {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.image-card .card-info {
+  flex: 1;
+  min-width: 0;
+}
+.image-card .card-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.3;
+}
+.image-card .card-id {
+  font-size: 10.5px;
+  color: var(--text-faint);
+  font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  margin-top: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Original-vs-AI label comparison (shown once AI results exist) */
+.image-card .label-compare {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.image-card .label-row {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 3px 6px;
+  border-radius: var(--radius-xs);
+  border: 1px solid transparent;
+  min-width: 0;
+  transition: background 120ms, border-color 120ms;
+}
+.image-card .label-row.is-chosen {
+  background: var(--primary-soft);
+  border-color: var(--primary);
+}
+.image-card .label-tag {
+  flex-shrink: 0;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 2px 6px;
+  border-radius: 999px;
+  line-height: 1.5;
+}
+.image-card .label-tag.tag-original {
+  background: rgba(15, 23, 42, 0.07);
+  color: var(--text-muted);
+}
+.image-card .label-tag.tag-ai {
+  background: var(--primary);
+  color: #fff;
+}
+.image-card .label-val {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+.image-card .label-row:not(.is-chosen) .label-val {
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+/* Per-image AI / Original label toggle - a compact segmented pill that
+   matches the filter tabs / segmented controls used elsewhere. */
+.image-card .label-toggle {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-self: center;
+  padding: 2px;
+  gap: 2px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--bg);
+  box-shadow: var(--shadow-sm) inset;
+}
+.image-card .label-toggle .lt-opt {
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: .02em;
+  padding: 4px 11px;
+  border-radius: 999px;
+  color: var(--text-muted);
+  background: transparent;
+  cursor: pointer;
+  transition: background 140ms, color 140ms, box-shadow 140ms;
+  white-space: nowrap;
+}
+.image-card .label-toggle .lt-opt:hover:not(.is-active) {
+  color: var(--text);
+  background: rgba(15, 23, 42, 0.04);
+}
+.image-card .label-toggle .lt-opt.is-active {
+  color: #fff;
+  background: var(--primary);
+  box-shadow: 0 1px 4px rgba(36, 102, 235, 0.35);
+}
+
+/* Gallery filter-empty state */
+.no-filter-results {
+  padding: 32px 20px;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+/* ── Footer-style primary button block ───────────────────────────── */
+/* The Images tab uses the same .btn .btn-primary pattern as Sync, but
+   wraps it in a #img-footer so it sticks visually under the gallery. */
+#img-footer { margin-top: 2px; }
+#img-footer .btn { margin-top: 0; }
+
+/* ═══════════════════════════════════════════════════════════════════
+   MODE STRIP - Form review ↔ Order Photos toggle inside the Sync tab.
+   Visually mirrors .filter-tabs so the segmented-pill pattern is
+   consistent across the panel.
+   ═══════════════════════════════════════════════════════════════════ */
+.mode-strip {
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  background: var(--bg);
+  border-radius: 10px;
+  border: 1px solid var(--border);
+}
+.mode-btn {
+  flex: 1;
+  display: inline-flex; align-items: center; justify-content: center;
+  gap: 7px;
+  padding: 8px 10px;
+  border-radius: 7px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-muted);
+  background: transparent;
+  transition: background 140ms, color 140ms, box-shadow 140ms;
+  white-space: nowrap;
+}
+.mode-btn svg { color: currentColor; flex-shrink: 0; }
+.mode-btn:hover:not(.is-active) {
+  color: var(--text);
+  background: rgba(15, 23, 42, 0.04);
+}
+.mode-btn.is-active {
+  background: var(--card);
+  color: var(--primary);
+  box-shadow: var(--shadow-sm), 0 0 0 1px var(--border);
+}
+
+/* Only the active mode-panel renders; siblings stay collapsed. */
+.mode-panel { display: none; flex-direction: column; gap: 14px; }
+.mode-panel.is-active { display: flex; }
+
+/* ── Send Feedback button (lives at the bottom of the queue card) ── */
+#btn-send-feedback {
+  margin-top: 16px;
+}
