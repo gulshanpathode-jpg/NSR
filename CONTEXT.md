@@ -294,6 +294,23 @@ CSS for this lives under `.warning-list` in `sidepanel.css`
 
 ## 8. Recent change log (most recent first)
 
+-6. **Results report search / filter / sort.** The standalone Order Photos
+   results page (`results/`) gained an interactive, sticky toolbar so an
+   operator can work a large survey without endless scrolling:
+   - **Search** across original label, verified label, description, and
+     photo-id, with live match highlighting (`<mark class="hl">`) and `Esc`
+     to clear.
+   - **Filter** segmented control: All / Correct / Changed, each showing a
+     live count (counts reflect the full set, not the search).
+   - **Sort**: page order, changed-first, label A–Z, label Z–A.
+   - A "Showing X of Y" line reflects the active view.
+   `results.js` now renders through a small immutable view layer: the full
+   result set is held in `view.items` (each tagged with `_order` = original
+   page index), and every control recomputes a filtered+sorted copy - so the
+   `#n` badge always shows the original page position and toggling controls
+   never loses data. No data-shape or backend changes; the side panel handoff
+   is untouched. (Files: `results/results.html`, `results/results.js`.)
+
 -5. **WKFC Property Renewal - Multi Building support.** Added the
    `WKFC Property Renewal - Multi Building` case type and attached it to the
    existing `WKFC Renewal Form` registry entry (its `caseTypes` array now holds
