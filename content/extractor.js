@@ -376,15 +376,16 @@
       if (!sib) return;
 
       if (key === 'Address to be Inspected') {
-        // The address cell uses <br> to split street from city/state.
-        // Read raw HTML so we can turn that <br> into a real newline
-        // instead of letting textContent collapse it to a space.
+        // The address cell uses <br> to split street / city-state / etc. into
+        // multiple lines. Flatten it to a SINGLE line: every <br> becomes a
+        // space so a two- or three-line address reads "line1 line2 line3".
+        // This single-line form is what the side panel shows AND what the
+        // knowledge-base payload sends under `Address`.
         const value = (sib.innerHTML || '')
-          .replace(/<br\s*\/?>/gi, '\n')   // <br>, <br/>, <BR> → newline
+          .replace(/<br\s*\/?>/gi, ' ')    // <br>, <br/>, <BR> → space
           .replace(/<[^>]+>/g, '')         // strip any other stray tags
           .replace(/\u00a0/g, ' ')         // &nbsp; → space
-          .replace(/[ \t]+/g, ' ')         // collapse spaces/tabs, keep \n
-          .replace(/ *\n */g, '\n')        // trim spaces around newlines
+          .replace(/\s+/g, ' ')            // collapse all whitespace to a space
           .trim();
         data['Address'] = value;
       } else {
@@ -599,6 +600,27 @@
     };
   }
 
-  window.NSR_EXTRACTOR = { extract, extractSurveyNumber, extractGenericFields, extractCoverFields };
+  // ── Standalone address scrape ──────────────────────────────────────
+  // Returns just the inspection address ("Address to be Inspected", emitted
+  // under the backend key "Address") from the General Information "Generic
+  // Fields" display table, or '' if the page has no such row. Reuses
+  // extractGenericFields so the <br>→space flattening (multi-line address →
+  // single "line1 line2 line3" line) and matching stay in one place.
+  //
+  // This powers the side panel's universal address block (Copy / Google /
+  // Google Maps), which appears on EVERY General Information page regardless of
+  // case type - including case types whose GI page is NOT a supported Sync
+  // target. It has no bearing on Sync gating, which still keys off the form
+  // registry match.
+  function extractAddress() {
+    try {
+      const out = extractGenericFields(['Address to be Inspected']);
+      return (out && out.data && out.data.Address) || '';
+    } catch (_) {
+      return '';
+    }
+  }
+
+  window.NSR_EXTRACTOR = { extract, extractSurveyNumber, extractGenericFields, extractCoverFields, extractAddress };
   console.log('[NSR] Extractor loaded');
 })();

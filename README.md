@@ -42,6 +42,9 @@ payload whitelist).
 | Form review  | `natsr.losscontrol360.com`           | Brownstone Interior Report         | `Brownstone Cover`                         | knowledge_base    |
 | Form review  | `natsr.losscontrol360.com`           | Brownstone Interior Report         | `Brownstone Form 6.22.17`                  | verify            |
 | Form review  | `natsr.losscontrol360.com`           | Brownstone Interior Report         | `General Information` (address only)       | knowledge_base    |
+| Form review  | `natsr.losscontrol360.com`           | Brownstone Interior Report - New Purchase | `Brownstone Cover`                  | knowledge_base    |
+| Form review  | `natsr.losscontrol360.com`           | Brownstone Interior Report - New Purchase | `Brownstone Form 6.22.17`           | verify            |
+| Form review  | `natsr.losscontrol360.com`           | Brownstone Interior Report - New Purchase | `General Information` (address only) | knowledge_base    |
 | Form review  | `natsr.losscontrol360.com`           | Condos - Property                  | `General Information` (address only)       | knowledge_base    |
 | Form review  | `natsr.losscontrol360.com`           | Condos - Property                  | `Dual: Habitational Property Form`         | kb_then_verify    |
 | Form review  | `natsr.losscontrol360.com`           | Abbreviated: Hab                   | `General Information` (address only)        | knowledge_base    |
@@ -77,6 +80,23 @@ a page that is unsupported only because of a case-type mismatch is easy to
 diagnose).
 
 If nothing matches, the Sync tab shows an "Unsupported page" warning.
+
+### Address helper (every General Information page)
+
+On **any** General Information page - detected purely from the
+`General Information` header, so it works for **every** case type, not just the
+ones in the table above - the detection card shows an **Address** block with
+three quick actions:
+
+- **Copy** the inspection address to the clipboard,
+- **Google** it (opens a Google search in a new tab), and
+- **Maps** it (opens Google Maps in a new tab).
+
+This helper is independent of Sync: on a General Information page whose case
+type is **not** a registered Sync target, the address block still appears, but
+the Sync button stays disabled and the "Unsupported page" warning is shown.
+Only the General Information pages listed in the table above can be saved with
+Sync.
 
 ## Project structure
 
@@ -327,6 +347,15 @@ It responds with:
   to it and click again. If it still fails, reload the page.
 
 ## Version history
+
+### 4.1.0
+- **Address helper on every General Information page.** Any GI page (detected
+  from its header, so every case type qualifies) now shows an **Address** block
+  with **Copy**, **Google**, and **Maps** actions. It is independent of Sync:
+  an unsupported GI case type shows the address block but keeps Sync disabled.
+- **New supported case type:** Brownstone Interior Report - New Purchase (shares
+  the Brownstone Cover, Brownstone Form 6.22.17, and address-only General
+  Information pages).
 
 ### 4.0.0
 - **On-page full-resolution image viewer (gallery).** Reference images

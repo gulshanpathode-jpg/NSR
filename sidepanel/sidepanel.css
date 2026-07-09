@@ -223,6 +223,29 @@ h1, h2, h3 { font-weight: 600; letter-spacing: -0.2px; }
   color: var(--text);
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
+/* Property address block (universal - every General Information page). */
+.detection-address-block {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border, rgba(0,0,0,0.08));
+}
+.detection-address-row {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 10px;
+  margin-top: 3px;
+}
+.detection-address {
+  font-size: 13.5px; font-weight: 600;
+  color: var(--text);
+  line-height: 1.35;
+  flex: 1; min-width: 0;
+  word-break: break-word;   /* single-line address, wraps if narrow */
+}
+.detection-address-actions {
+  display: flex; gap: 4px;
+  flex-shrink: 0;
+}
+.icon-button-sm { width: 28px; height: 28px; border-radius: 7px; }
 
 /* ── Status card ─────────────────────────────────────────────── */
 .status-head {

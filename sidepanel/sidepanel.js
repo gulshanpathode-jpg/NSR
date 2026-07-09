@@ -44,6 +44,11 @@ const els = {
   detectionUrl: $('detection-url'),
   detectionSurveyType: $('detection-surveytype'),
   detectionSurveyTypeBlk: $('detection-surveytype-block'),
+  detectionAddressBlock: $('detection-address-block'),
+  detectionAddress: $('detection-address'),
+  btnCopyAddress: $('btn-copy-address'),
+  btnOpenAddress: $('btn-open-address'),
+  btnMapAddress: $('btn-map-address'),
 
   // Mode strip
   modeStrip: $('mode-strip'),
@@ -290,6 +295,69 @@ function logActivity(message, level = 'info') {
   renderActivity();
 }
 
+// ── Address actions (universal - every General Information page) ────────
+// Copy the detected inspection address / open it in Google search or Google
+// Maps. Mirrors the IA extension's address block. These read only from
+// state.detection.generalInfo.address and never affect the Sync flow.
+
+function detectedAddress() {
+  return (state.detection && state.detection.generalInfo && state.detection.generalInfo.address) || '';
+}
+
+async function copyAddress() {
+  const addr = detectedAddress();
+  if (!addr) { showToast('No address detected'); return; }
+  try {
+    await navigator.clipboard.writeText(addr);
+    showToast('Address copied');
+    logActivity('Address copied to clipboard', 'success');
+  } catch (e) {
+    showToast('Copy failed: ' + e.message);
+  }
+}
+
+// Open a URL in a new tab placed immediately to the right of the active tab,
+// in the side panel's own window (same pattern as openResultsTab).
+async function openUrlBesideTab(url, logLabel) {
+  try {
+    const [active] = await chrome.tabs.query({ active: true, currentWindow: true });
+    const createOpts = { url, active: true };
+    if (active && typeof active.index === 'number') {
+      createOpts.index = active.index + 1;
+      createOpts.openerTabId = active.id;
+    }
+    if (active && typeof active.windowId === 'number') {
+      createOpts.windowId = active.windowId;
+    }
+    await chrome.tabs.create(createOpts);
+    if (logLabel) logActivity(logLabel, 'info');
+  } catch (e) {
+    showToast('Could not open tab: ' + e.message);
+  }
+}
+
+function openAddressInGoogle() {
+  const addr = detectedAddress();
+  if (!addr) { showToast('No address detected'); return; }
+  openUrlBesideTab(
+    'https://www.google.com/search?q=' + encodeURIComponent(addr),
+    'Opened address in Google'
+  );
+}
+
+function openAddressInMaps() {
+  const addr = detectedAddress();
+  if (!addr) { showToast('No address detected'); return; }
+  openUrlBesideTab(
+    'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(addr),
+    'Opened address in Maps'
+  );
+}
+
+if (els.btnCopyAddress) els.btnCopyAddress.addEventListener('click', copyAddress);
+if (els.btnOpenAddress) els.btnOpenAddress.addEventListener('click', openAddressInGoogle);
+if (els.btnMapAddress) els.btnMapAddress.addEventListener('click', openAddressInMaps);
+
 // ═════════════════════════════════════════════════════════════════════
 // 4. Tab navigation (rail)
 // ═════════════════════════════════════════════════════════════════════
@@ -392,9 +460,31 @@ function renderDetection() {
     renderImagesDetection(d);
   }
 
+  // Address block is universal: it shows on every General Information page
+  // (any case type), independent of the mode-specific render above and of
+  // whether the page is a supported Sync target.
+  renderAddressBlock(d);
+
   // Mark that we've rendered once so the next PAGE_DETECTED doesn't
   // override the user's manual mode selection.
   d.__seen = true;
+}
+
+/**
+ * Show the property-address block whenever detection scraped an inspection
+ * address (i.e. on any General Information page). Purely informational - it
+ * never touches the Sync button's enabled/disabled state, which is decided by
+ * the registry match in renderFormDetection().
+ */
+function renderAddressBlock(d) {
+  if (!els.detectionAddressBlock || !els.detectionAddress) return;
+  const addr = (d && d.generalInfo && d.generalInfo.address) || '';
+  if (addr) {
+    els.detectionAddress.textContent = addr;
+    els.detectionAddressBlock.style.display = 'block';
+  } else {
+    els.detectionAddressBlock.style.display = 'none';
+  }
 }
 
 function renderSurveyType(d) {

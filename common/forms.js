@@ -76,6 +76,7 @@
     WKFC_RENEWAL: 'WKFC Property Renewal',
     WKFC_RENEWAL_MULTI: 'WKFC Property Renewal - Multi Building',
     BROWNSTONE: 'Brownstone Interior Report',
+    BROWNSTONE_NEW_PURCHASE: 'Brownstone Interior Report - New Purchase',
     CONDOS: 'Condos - Property',
     ABBREVIATED_HAB: 'Abbreviated: Hab',
     ABBREVIATED_NON_HAB: 'Abbreviated: Non-Hab',
@@ -122,6 +123,13 @@
     },
 
     // ── Brownstone Interior Report set ────────────────────────────────
+    // Every entry is shared by both the standard 'Brownstone Interior Report'
+    // case type and the 'Brownstone Interior Report - New Purchase' variant -
+    // same headers, same flows (Cover / verify / address-only GI). A single
+    // registry entry carries both case types in its `caseTypes` array (same
+    // pattern as WKFC Renewal / Renewal - Multi Building). Order Photos is
+    // universal, so it works on both automatically; survey_type flows through
+    // from Utilant.CaseTypeName unchanged.
     {
       formId: 'brownstone-cover',
       name: 'Brownstone Cover',
@@ -130,7 +138,7 @@
       flow: 'knowledge_base',
       pageType: 'cover',
       kind: 'form_text_dict',
-      caseTypes: [CASE_TYPES.BROWNSTONE],
+      caseTypes: [CASE_TYPES.BROWNSTONE, CASE_TYPES.BROWNSTONE_NEW_PURCHASE],
       // Single field. The on-page label carries instructional helper text
       // ("Please include how the survey went…"), so it is matched by prefix
       // (see PREFIX_MATCH_KEYS in extractor.js). Emits:
@@ -144,7 +152,7 @@
       titleHint: 'Brownstone Form 6.22.17',
       flow: 'verify',
       kind: 'form',
-      caseTypes: [CASE_TYPES.BROWNSTONE],
+      caseTypes: [CASE_TYPES.BROWNSTONE, CASE_TYPES.BROWNSTONE_NEW_PURCHASE],
     },
     {
       // Brownstone General Information: same flow / page_type / endpoint as
@@ -159,7 +167,7 @@
       flow: 'knowledge_base',
       pageType: 'general',
       kind: 'generic_fields',
-      caseTypes: [CASE_TYPES.BROWNSTONE],
+      caseTypes: [CASE_TYPES.BROWNSTONE, CASE_TYPES.BROWNSTONE_NEW_PURCHASE],
       genericFields: ['Address to be Inspected'],
     },
 

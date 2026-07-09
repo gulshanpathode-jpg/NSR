@@ -93,6 +93,46 @@
             <div class="detection-label">Detected Survey Type</div>
             <div class="detection-surveytype" id="detection-surveytype">-</div>
           </div>
+          <!-- Property address block. Shown on EVERY General Information page
+               (any case type) so the inspector can copy the address or open it
+               in Google / Google Maps. Independent of Sync support - it appears
+               on unsupported GI case types too. -->
+          <div class="detection-address-block" id="detection-address-block" style="display:none;">
+            <div class="detection-label">Address</div>
+            <div class="detection-address-row">
+              <div class="detection-address" id="detection-address">-</div>
+              <div class="detection-address-actions">
+                <button class="icon-button icon-button-sm" id="btn-copy-address"
+                        title="Copy address" aria-label="Copy address">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
+                       stroke="currentColor" stroke-width="2"
+                       stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                  </svg>
+                </button>
+                <button class="icon-button icon-button-sm" id="btn-open-address"
+                        title="Search address in Google (new tab)" aria-label="Search address in Google">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
+                       stroke="currentColor" stroke-width="2"
+                       stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+                    <polyline points="15 3 21 3 21 9"/>
+                    <line x1="10" y1="14" x2="21" y2="3"/>
+                  </svg>
+                </button>
+                <button class="icon-button icon-button-sm" id="btn-map-address"
+                        title="Open address in Google Maps (new tab)" aria-label="Open address in Google Maps">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
+                       stroke="currentColor" stroke-width="2"
+                       stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 10c0 7-9 12-9 12s-9-5-9-12a9 9 0 0 1 18 0z"/>
+                    <circle cx="12" cy="10" r="3"/>
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
 
         <!-- Mode strip: only visible when the page supports both flows ─── -->
@@ -456,7 +496,7 @@
         <img src="../icons/dhaninfo_logo.jpg" alt="DhanInfo" class="footer-logo" />
       </span>
       <span class="footer-sep" aria-hidden="true">|</span>
-      <span class="version">v 4.0.0</span>
+      <span class="version">v 4.1.0</span>
     </span>
   </footer>
 

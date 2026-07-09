@@ -91,6 +91,41 @@
   }
 
   /**
+   * Universal "General Information" detection - deliberately independent of the
+   * form registry and case type. ANY NSR page whose header reads "General
+   * Information" is treated as a GI page, and we scrape its inspection address.
+   *
+   * This drives the side panel's address block (Copy / Google / Google Maps),
+   * which the product wants on EVERY General Information page - even case types
+   * whose GI page is not a supported Sync target. It has no effect on Sync
+   * gating: whether the Sync button is enabled still comes solely from
+   * detectFormFromDom()'s registry match.
+   */
+  function detectGeneralInfo() {
+    if (window.location.hostname !== 'natsr.losscontrol360.com') {
+      return { isGeneralInfo: false, address: '' };
+    }
+    let isGeneralInfo = false;
+    const labels = document.querySelectorAll('.mainSectionHeaderLabel');
+    for (const el of labels) {
+      const text = (el.textContent || '').replace(/\s+/g, ' ').trim().toLowerCase();
+      if (text.includes('general information')) {
+        isGeneralInfo = true;
+        break;
+      }
+    }
+
+    const address =
+      isGeneralInfo &&
+      window.NSR_EXTRACTOR &&
+      typeof window.NSR_EXTRACTOR.extractAddress === 'function'
+        ? window.NSR_EXTRACTOR.extractAddress()
+        : '';
+
+    return { isGeneralInfo, address };
+  }
+
+  /**
    * Combined page detection - returns both form and image capabilities so the
    * side panel can render its tab badges in one round-trip.
    */
@@ -109,6 +144,9 @@
         || '',
       form,
       images,
+      // Universal (case-type-independent) address block source. Present on
+      // every GI page; the Sync button is unaffected by this.
+      generalInfo: detectGeneralInfo(),
       hasFormQuestions: document.querySelectorAll('.formQues').length > 0,
     };
   }

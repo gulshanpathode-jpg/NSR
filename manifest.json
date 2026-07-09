@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Smart Fill - NSR LossControl360",
-  "version": "4.0.0",
+  "version": "4.1.0",
   "description": "AI-assisted form review + image extraction for LossControl360. Side-panel UI with Accept/Reject workflow for forms and API-verified label sorting for survey photos.",
 
   "permissions": [
