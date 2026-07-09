@@ -154,6 +154,11 @@ const state = {
   // every PAGE_DETECTED broadcast (tab switch / SPA navigation) and would
   // otherwise make the photo links vanish on the next card repaint.
   caseId: '',
+  // Reference-photo thumbnail cache, keyed by the photoHandler URL → a data
+  // URL fetched (with session cookies) via the content script. Populated only
+  // when the direct cross-origin <img> load fails; lets re-renders (filter
+  // changes, single-card repaints) reuse the bytes instead of re-fetching.
+  refThumbCache: {},
   // URL of the page the current pipeline output (queue / saved / error
   // banner) belongs to. Used to clear that output when the side panel moves
   // to a different page, so an error from page A never shows on page B.
@@ -1352,6 +1357,8 @@ function renderQueue() {
     const sorted = [...visible].sort((a, b) => order[a.status] - order[b.status]);
     sorted.forEach((entry) => els.suggestionList.appendChild(renderSuggestion(entry)));
   }
+  hydrateReferenceThumbnails();
+  prefetchReferenceImages();
   updateFilterCounts();
   updateCounts();
   updateBulkBar();
@@ -1731,21 +1738,19 @@ function renderSourcePhotosHtml(photoIds) {
   const links = photoIds.map((pid, i) => {
     const href = buildPhotoHandlerUrl(caseId, pid);
     if (!href) return '';
-    // A button (not an <a target=_blank>): clicking opens the image in the
-    // on-page modal via openImageOnPage(). data-image-url is read by the
-    // delegated handler on els.suggestionList.
+    // A thumbnail button (not an <a target=_blank>): clicking opens the image
+    // in the on-page modal via openImageOnPage(). The class + data-image-url
+    // are unchanged, so the delegated handler on els.suggestionList still
+    // works. The <img> loads the photo directly (cross-origin); if that fails
+    // for want of session cookies, hydrateReferenceThumbnails() swaps in a
+    // content-script-fetched data URL.
     return `
       <button type="button" class="source-photo-link"
          data-image-url="${escapeHtml(href)}"
-         title="${escapeHtml(pid)}">
-        <svg width="11" height="11" viewBox="0 0 24 24" fill="none"
-             stroke="currentColor" stroke-width="2"
-             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
-          <circle cx="8.5" cy="8.5" r="1.5"/>
-          <polyline points="21 15 16 10 5 21"/>
-        </svg>
-        <span>Image ${i + 1}</span>
+         title="${escapeHtml(pid)}" aria-label="Source image ${i + 1}">
+        <img class="source-photo-thumb" src="${escapeHtml(href)}"
+             data-thumb-url="${escapeHtml(href)}"
+             alt="Source image ${i + 1}" loading="lazy" />
       </button>
     `;
   }).join('');
@@ -1756,6 +1761,107 @@ function renderSourcePhotosHtml(photoIds) {
       <div class="source-photos-list">${links}</div>
     </div>
   `;
+}
+
+/**
+ * Warm the on-page image cache so clicking a source-photo thumbnail opens the
+ * modal instantly. We gather every reference photo across the current pending /
+ * matched entries and hand the photoHandler URLs to the content script, which
+ * fetches them once (on the LC360 tab, with cookies) and keeps object URLs
+ * ready for the modal. Only URLs travel over the message - never image bytes -
+ * so this stays cheap. Idempotent: the page skips already-cached URLs, so
+ * calling it on every queue render costs nothing after the first pass.
+ */
+function prefetchReferenceImages() {
+  const caseId = state.caseId || extractCaseId(state.detection?.url || '');
+  if (!caseId) return;
+
+  const urls = [];
+  const seen = new Set();
+  state.entries.forEach((entry) => {
+    if (entry.status !== 'pending' && entry.status !== 'matched') return;
+    const ids = entry.imagePass && entry.imagePass.aiSourcePhotoIds;
+    if (!Array.isArray(ids)) return;
+    ids.forEach((pid) => {
+      const url = buildPhotoHandlerUrl(caseId, pid);
+      if (url && !seen.has(url)) { seen.add(url); urls.push(url); }
+    });
+  });
+  if (!urls.length) return;
+
+  const msg = { action: 'PREFETCH_IMAGES', images: urls };
+  const tabId = state.detection && state.detection.tabId;
+  if (typeof tabId === 'number') msg.targetTabId = tabId;
+  chrome.runtime.sendMessage(msg, () => { void chrome.runtime.lastError; });
+}
+
+/**
+ * Ask the content script (running on the LC360 tab, so the request carries the
+ * page's session cookies) to fetch an image and return it as a base64 data
+ * URL. Lighter than fetchImageBlob() - we skip the Blob round-trip and use the
+ * data URL straight as an <img src>. `targetTabId` pins the fetch to the LC360
+ * tab even if the user has since tabbed away.
+ */
+function fetchImageDataUrl(imageUrl, targetTabId) {
+  return new Promise((resolve, reject) => {
+    const msg = { action: 'FETCH_IMAGE_BLOB', imageUrl };
+    if (typeof targetTabId === 'number') msg.targetTabId = targetTabId;
+    chrome.runtime.sendMessage(msg, (response) => {
+      if (chrome.runtime.lastError) return reject(new Error(chrome.runtime.lastError.message));
+      if (!response || response.error || !response.dataUrl) {
+        return reject(new Error(response ? response.error : 'No response'));
+      }
+      resolve(response.dataUrl);
+    });
+  });
+}
+
+/**
+ * Reference-photo thumbnails load their <img> directly from photoHandler. That
+ * works whenever the browser sends LC360 session cookies on the cross-origin
+ * request (same path the Order Photos gallery relies on). When it doesn't
+ * (cookies withheld → 403/blank), we fall back to a content-script fetch on the
+ * LC360 tab, which always carries cookies, and swap the resulting data URL in.
+ *
+ * Called after every queue render / single-card repaint. `data-hydrated` marks
+ * imgs we've already wired so re-renders don't double-attach; the per-URL
+ * cache (state.refThumbCache) means a fallback fetch happens at most once per
+ * distinct photo across all renders.
+ */
+function hydrateReferenceThumbnails() {
+  const imgs = els.suggestionList.querySelectorAll(
+    'img.source-photo-thumb:not([data-hydrated])'
+  );
+  imgs.forEach((img) => {
+    img.setAttribute('data-hydrated', '1');
+    const url = img.getAttribute('data-thumb-url');
+    if (!url) return;
+
+    // A prior fallback already produced a data URL for this photo → use it and
+    // skip the direct load entirely.
+    const cached = state.refThumbCache[url];
+    if (cached) { img.src = cached; return; }
+
+    const fallback = () => {
+      img.removeEventListener('error', fallback);
+      fetchImageDataUrl(url, state.detection && state.detection.tabId)
+        .then((dataUrl) => {
+          state.refThumbCache[url] = dataUrl;
+          img.src = dataUrl;
+          const btn = img.closest('.source-photo-link');
+          if (btn) btn.classList.remove('is-thumb-failed');
+        })
+        .catch(() => {
+          const btn = img.closest('.source-photo-link');
+          if (btn) btn.classList.add('is-thumb-failed');
+        });
+    };
+
+    img.addEventListener('error', fallback);
+    // The direct src may have already failed before this listener attached
+    // (e.g. a cached 403): complete + zero natural size means it errored.
+    if (img.complete && img.naturalWidth === 0) fallback();
+  });
 }
 
 /**
@@ -1883,6 +1989,7 @@ function updateBulkBar() {
 function repaintEntry(entry) {
   const node = els.suggestionList.querySelector(`.suggestion[data-uid="${CSS.escape(entry.uid)}"]`);
   if (node) fillSuggestion(node, entry);
+  hydrateReferenceThumbnails();
   updateCounts();
   updateBulkBar();
 }

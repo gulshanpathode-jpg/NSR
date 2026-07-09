@@ -654,31 +654,43 @@ h1, h2, h3 { font-weight: 600; letter-spacing: -0.2px; }
   flex-wrap: wrap;
   gap: 5px;
 }
+/* Source-photo references render as small image thumbnails. The button keeps
+   its class + data-image-url so a click still opens the on-page modal. */
 .source-photo-link {
+  position: relative;
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  padding: 3px 8px;
-  border-radius: 999px;
-  font-size: 11px;
-  font-weight: 600;
-  font-family: inherit;
-  line-height: 1.4;
-  color: var(--primary);
+  justify-content: center;
+  width: 46px;
+  height: 46px;
+  padding: 0;
+  border-radius: 8px;
+  overflow: hidden;
   background: var(--primary-soft);
-  border: 1px solid transparent;
-  text-decoration: none;
+  border: 1px solid var(--border);
   cursor: pointer;
   appearance: none;
   -webkit-appearance: none;
-  transition: background 120ms, border-color 120ms, transform 80ms;
+  transition: border-color 120ms, box-shadow 120ms, transform 80ms;
 }
 .source-photo-link:hover {
-  background: #dbeafe;
   border-color: var(--primary);
+  box-shadow: 0 0 0 2px var(--primary-soft);
 }
 .source-photo-link:active { transform: translateY(1px); }
-.source-photo-link svg { flex-shrink: 0; }
+.source-photo-thumb {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+/* Thumbnail couldn't be fetched (not on the LC360 tab / 403): hide the broken
+   <img> glyph and fall back to a plain dashed placeholder tile. */
+.source-photo-link.is-thumb-failed {
+  background: var(--bg);
+  border-style: dashed;
+}
+.source-photo-link.is-thumb-failed .source-photo-thumb { visibility: hidden; }
 
 /* "Related pages" pills - non-interactive informational tags shown below
    the Source photos block. Use a muted tone so they stay subordinate to

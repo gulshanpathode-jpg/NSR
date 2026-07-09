@@ -369,6 +369,19 @@
           return false;
         }
 
+        // ── Warm the on-page image cache (fire-and-forget) ──────────
+        //   The side panel sends this once the verify queue is ready so the
+        //   modal opens instantly when a source-photo thumbnail is clicked.
+        case 'PREFETCH_IMAGES': {
+          if (window.NSR_IMAGE_MODAL && typeof window.NSR_IMAGE_MODAL.prefetch === 'function') {
+            window.NSR_IMAGE_MODAL.prefetch(msg.images || []);
+            sendResponse({ ok: true });
+          } else {
+            sendResponse({ ok: false, error: 'Image modal not loaded on this page' });
+          }
+          return false;
+        }
+
         // ── Image (LC360) family ────────────────────────────────────
         case 'DETECT_IMAGES': {
           if (!window.NSR_IMAGES) {

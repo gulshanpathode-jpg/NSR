@@ -40,6 +40,56 @@
   // Gallery state.
   let images = [];
   let index = 0;
+  // Bumps on every navigation so a slow image that finishes loading AFTER the
+  // user has moved on can't overwrite the image they're now looking at. This
+  // is what fixes "click next while image 2 is still loading → it snaps back to
+  // image 1": each goTo() claims a token and only applies its result if still
+  // current.
+  let navToken = 0;
+
+  // Prefetch cache. Two maps, both keyed by the photoHandler URL:
+  //   · fetchPromises - url → Promise<objectURL> (in-flight or settled fetch),
+  //     so we never download the same image twice.
+  //   · readyUrls     - url → objectURL, populated ONLY once the blob has fully
+  //     downloaded. A hit here means the image can be shown instantly.
+  // The side panel calls prefetch() as soon as the verify response arrives, so
+  // by the time the user opens the modal the bytes are already in memory.
+  // Fetches run on the page, which is same-origin with photoHandler and carries
+  // the session cookies, so no 403.
+  const fetchPromises = new Map();
+  const readyUrls = new Map();
+
+  /**
+   * Ensure `url` is being (or has been) fetched; returns a Promise that
+   * resolves to its object URL. Idempotent - repeated calls share one fetch.
+   * On failure the promise is dropped so a later attempt can retry.
+   */
+  function ensureFetched(url) {
+    if (fetchPromises.has(url)) return fetchPromises.get(url);
+    const p = fetch(url, { credentials: 'include' })
+      .then((resp) => {
+        if (!resp.ok) throw new Error('HTTP ' + resp.status);
+        return resp.blob();
+      })
+      .then((blob) => {
+        const objUrl = URL.createObjectURL(blob);
+        readyUrls.set(url, objUrl);
+        return objUrl;
+      });
+    p.catch(() => { fetchPromises.delete(url); });
+    fetchPromises.set(url, p);
+    return p;
+  }
+
+  /**
+   * Kick off (or reuse) a fetch for each URL so the bytes are ready before the
+   * user opens/navigates. Safe to call repeatedly - already-fetched URLs are
+   * skipped. This is the "load everything up front, no wait time" entry point.
+   */
+  function prefetch(input) {
+    const list = Array.isArray(input) ? input.filter(Boolean) : (input ? [input] : []);
+    list.forEach(ensureFetched);
+  }
 
   // Per-image view state (scale + pan offset) and drag bookkeeping.
   let scale = 1;
@@ -77,6 +127,22 @@
         cursor: grab;
       }
       #${OVERLAY_ID} .nsr-im-stage.is-dragging { cursor: grabbing; }
+      #${OVERLAY_ID} .nsr-im-loading {
+        position: absolute; inset: 0;
+        display: none; align-items: center; justify-content: center;
+        gap: 10px;
+        color: #e2e8f0; font-size: 13px; font-weight: 600;
+        pointer-events: none;
+      }
+      #${OVERLAY_ID} .nsr-im-loading::before {
+        content: ""; width: 22px; height: 22px; border-radius: 50%;
+        border: 3px solid rgba(255,255,255,0.25);
+        border-top-color: #f8fafc;
+        animation: nsr-im-spin 0.7s linear infinite;
+      }
+      #${OVERLAY_ID} .nsr-im-loading.is-error { color: #fca5a5; }
+      #${OVERLAY_ID} .nsr-im-loading.is-error::before { display: none; }
+      @keyframes nsr-im-spin { to { transform: rotate(360deg); } }
       #${OVERLAY_ID} .nsr-im-img {
         max-width: 92vw; max-height: 88vh;
         user-select: none; -webkit-user-drag: none;
@@ -167,15 +233,55 @@
     if (counter) counter.textContent = `${index + 1} / ${images.length}`;
   }
 
+  // Toggle the loading / error overlay. While an image isn't ready we hide the
+  // <img> (rather than let the previous frame linger) and show a spinner, so
+  // navigating to a not-yet-loaded image never looks like it stayed on the old
+  // one.
+  function setLoading(status /* 'loading' | 'done' | 'error' */) {
+    if (imgEl) imgEl.style.visibility = status === 'done' ? 'visible' : 'hidden';
+    const box = document.querySelector(`#${OVERLAY_ID} .nsr-im-loading`);
+    if (!box) return;
+    box.style.display = status === 'done' ? 'none' : 'flex';
+    box.classList.toggle('is-error', status === 'error');
+    box.textContent = status === 'error' ? 'Could not load image' : 'Loading…';
+  }
+
   // Load image at the given gallery position (wraps around the ends). Each
   // navigation resets zoom/pan back to fit-to-screen.
+  //
+  // If the image is already downloaded (readyUrls) it shows instantly. If not,
+  // we show a spinner and wait for its fetch, then swap it in - but only if the
+  // user hasn't navigated away in the meantime (navToken guard). That guard is
+  // what stops a slow image from overwriting a later one.
   function goTo(i) {
     if (!images.length) return;
     const n = images.length;
     index = ((i % n) + n) % n;   // wrap-around
-    if (imgEl) imgEl.src = images[index];
     resetView();
     updateCounter();
+    if (!imgEl) return;
+
+    const url = images[index];
+    const token = ++navToken;
+
+    const ready = readyUrls.get(url);
+    if (ready) {
+      imgEl.src = ready;
+      setLoading('done');
+      return;
+    }
+
+    setLoading('loading');
+    ensureFetched(url)
+      .then((objUrl) => {
+        if (token !== navToken) return;   // user moved on; ignore stale result
+        imgEl.src = objUrl;
+        setLoading('done');
+      })
+      .catch(() => {
+        if (token !== navToken) return;
+        setLoading('error');
+      });
   }
 
   function next() { goTo(index + 1); }
@@ -192,6 +298,7 @@
     dragging = false;
     images = [];
     index = 0;
+    navToken++;   // invalidate any in-flight image swap from a prior open
   }
 
   function onKeydown(e) {
@@ -242,6 +349,11 @@
     index = Math.min(Math.max(0, startIndex | 0), images.length - 1);
     scale = 1; tx = 0; ty = 0;
 
+    // Start fetching EVERY image in this gallery immediately (idempotent with
+    // any earlier side-panel prefetch), so prev/next have their bytes ready by
+    // the time the user gets there.
+    prefetch(images);
+
     const multi = images.length > 1;
 
     const overlay = document.createElement('div');
@@ -264,6 +376,7 @@
       ${multi ? `<button class="nsr-im-nav nsr-im-next" data-act="next" title="Next (→)">&#8250;</button>` : ''}
       <div class="nsr-im-stage">
         <img class="nsr-im-img" alt="Inspection photo" draggable="false" />
+        <div class="nsr-im-loading">Loading…</div>
       </div>
       <div class="nsr-im-hint">${multi ? '← → to browse · ' : ''}scroll to zoom · drag to pan · Esc to close</div>
     `;
@@ -310,6 +423,6 @@
     return true;
   }
 
-  window.NSR_IMAGE_MODAL = { show, close };
+  window.NSR_IMAGE_MODAL = { show, close, prefetch };
   console.log('[NSR] Image modal loaded');
 })();

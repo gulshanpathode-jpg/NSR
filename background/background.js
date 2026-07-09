@@ -549,6 +549,8 @@ chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
     'DETECT_PAGE',
     // Shared on-page image modal (verify refs + Order Photos thumbs)
     'SHOW_IMAGE_MODAL',
+    // Warm the on-page image cache so the modal opens instantly
+    'PREFETCH_IMAGES',
   ];
   if (PASS_THROUGH.includes(msg.action)) {
     (async () => {
