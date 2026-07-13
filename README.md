@@ -197,7 +197,7 @@ holds up cleanly from 380px to 900+px:
    - The results report has a sticky toolbar for working large surveys
      quickly: **search** labels / descriptions / photo-id (with match
      highlighting and `Esc` to clear), **filter** by All / Correct / Changed,
-     and **sort** by page order, changed-first, or label A–Z / Z–A. A
+     and **sort** by page order, changed-first, or label A-Z / Z-A. A
      "Showing X of Y" line tracks the active view; the photo `#n` badge always
      reflects the original page order.
 5. Back in the side panel, **AI Sort** becomes active. Click it to rename
