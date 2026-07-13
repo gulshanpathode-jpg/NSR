@@ -5,6 +5,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Smart Fill</title>
   <link rel="stylesheet" href="sidepanel.css" />
+  <script>
+    // Apply the saved theme before first paint so dark-mode users never see
+    // a light flash. sidepanel.js keeps this localStorage mirror in sync with
+    // chrome.storage; light is the default when nothing is saved.
+    try {
+      if (localStorage.getItem('sf-theme') === 'dark')
+        document.documentElement.setAttribute('data-theme', 'dark');
+    } catch (e) { /* storage blocked; fall back to light */ }
+  </script>
 </head>
 <body>
   <!-- ═════════ HEADER ═════════ -->
@@ -19,6 +28,7 @@
         </svg>
       </span>
       <h1>Smart&nbsp;Fill</h1>
+      <span class="brand-chip">UI 2.0</span>
     </div>
     <div class="top-actions">
       <button class="icon-button" id="btn-refresh" title="Refresh" aria-label="Refresh">
@@ -175,6 +185,12 @@
               <div class="canvas-inner">
                 <div class="canvas-ring" id="canvas-ring">
                   <svg viewBox="0 0 64 64" aria-hidden="true">
+                    <defs>
+                      <linearGradient id="ring-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" class="ring-stop-a"/>
+                        <stop offset="100%" class="ring-stop-b"/>
+                      </linearGradient>
+                    </defs>
                     <circle cx="32" cy="32" r="28" class="ring-track"/>
                     <circle cx="32" cy="32" r="28" class="ring-progress" id="ring-progress"/>
                   </svg>
@@ -419,6 +435,16 @@
             Connection settings for the AI backends.
           </p>
 
+          <h3 class="config-subhead">Appearance</h3>
+          <div class="form-row">
+            <label class="switch" for="cfg-dark">
+              <input type="checkbox" id="cfg-dark" />
+              <span class="switch-slider"></span>
+              <span class="switch-label">Dark mode</span>
+            </label>
+            <span class="form-hint">Light is the default. Your choice is saved for next time.</span>
+          </div>
+
           <div class="form-row">
             <label class="form-label" for="cfg-backend">Form-verify backend</label>
             <input class="form-input" id="cfg-backend" type="text"
@@ -448,7 +474,7 @@
               </div>
             </div>
             <div class="color-row-controls">
-              <input type="color" id="cfg-color-form" class="color-input" value="#eef4ff" />
+              <input type="color" id="cfg-color-form" class="color-input" value="#eef0fe" />
               <button class="btn-text color-reset" data-target="form">Reset</button>
             </div>
           </div>
@@ -462,7 +488,7 @@
               </div>
             </div>
             <div class="color-row-controls">
-              <input type="color" id="cfg-color-image" class="color-input" value="#ede9fe" />
+              <input type="color" id="cfg-color-image" class="color-input" value="#fbe9fe" />
               <button class="btn-text color-reset" data-target="image">Reset</button>
             </div>
           </div>
@@ -476,7 +502,7 @@
               </div>
             </div>
             <div class="color-row-controls">
-              <input type="color" id="cfg-color-current" class="color-input" value="#f8fafc" />
+              <input type="color" id="cfg-color-current" class="color-input" value="#f6f7fb" />
               <button class="btn-text color-reset" data-target="current">Reset</button>
             </div>
           </div>
@@ -496,7 +522,7 @@
         <img src="../icons/dhaninfo_logo.jpg" alt="DhanInfo" class="footer-logo" />
       </span>
       <span class="footer-sep" aria-hidden="true">|</span>
-      <span class="version">v 4.1.0</span>
+      <span class="version">v 4.2.0</span>
     </span>
   </footer>
 

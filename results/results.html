@@ -4,43 +4,92 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Smart Fill - Image Descriptions</title>
+  <script>
+    // Match the side panel's theme (shared extension origin). Light is the
+    // default; the panel's Config → Appearance switch writes this key.
+    try {
+      if (localStorage.getItem('sf-theme') === 'dark')
+        document.documentElement.setAttribute('data-theme', 'dark');
+    } catch (e) { /* storage blocked; fall back to light */ }
+  </script>
   <style>
+    :root { color-scheme: light; }
+    :root[data-theme="dark"] { color-scheme: dark; }
     /* ═══════════════════════════════════════════════════════════════════
        Design tokens - copied verbatim from sidepanel.css so the results
        page reads as a continuation of the side panel, not a separate app.
        ═══════════════════════════════════════════════════════════════════ */
     :root {
-      --bg:           #f8fafc;
+      /* ═══ SmartFill UI 2.0 — NSR (Indigo identity, matched to EZ) ═══ */
+      --bg:           #f4f5fb;
       --card:         #ffffff;
-      --card-hover:   #fbfdff;
+      --card-hover:   #fafbff;
 
-      --border:        #e6e8ee;
-      --border-strong: #d4d8e0;
+      --border:        #e5e7f2;
+      --border-strong: #d2d6e8;
 
-      --text:        #0f1729;
-      --text-muted:  #5b667a;
-      --text-faint:  #97a1b3;
+      --text:        #14162e;
+      --text-muted:  #5a6079;
+      --text-faint:  #989eb8;
 
-      --primary:        #2466eb;
-      --primary-hover:  #1e54c9;
-      --primary-soft:   #eef4ff;
+      --primary:        #4f46e5;
+      --primary-hover:  #4338ca;
+      --primary-soft:   #eef0fe;
+      --accent:         #818cf8;
+
+      --grad-a: #23215b;
+      --grad-b: #4338ca;
+      --grad-c: #6366f1;
+      --glow:   rgba(79, 70, 229, 0.32);
 
       --success:       #10b981;
-      --success-soft:  #d1fae5;
+      --success-soft:  #d9f7ec;
       --warning:       #f59e0b;
-      --warning-soft:  #fef3c7;
+      --warning-soft:  #fdf0d2;
       --danger:        #ef4444;
-      --danger-soft:   #fee2e2;
+      --danger-soft:   #fde3e3;
 
-      --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.04);
-      --shadow:    0 4px 14px rgba(15, 23, 42, 0.06);
+      --shadow-sm: 0 1px 2px rgba(16, 29, 29, 0.05);
+      --shadow:    0 6px 18px rgba(16, 29, 29, 0.07);
 
-      --radius:    14px;
-      --radius-sm: 10px;
+      --radius:    16px;
+      --radius-sm: 12px;
 
-      --font-sans: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI',
-                   Roboto, Helvetica, Arial, sans-serif;
+      --font-sans: 'Segoe UI Variable Text', 'Segoe UI', -apple-system,
+                   BlinkMacSystemFont, 'Inter', Roboto, Helvetica, Arial, sans-serif;
     }
+
+          :root[data-theme="dark"] {
+        --bg:           #0c0e1a;
+        --card:         #151829;
+        --card-hover:   #1a1e33;
+
+        --border:        #262b47;
+        --border-strong: #343b61;
+
+        --text:        #eceef8;
+        --text-muted:  #9aa1c0;
+        --text-faint:  #676e91;
+
+        --primary:       #8a84f5;
+        --primary-hover: #a5a0f8;
+        --primary-soft:  rgba(138, 132, 245, 0.14);
+        --accent:        #b3aefb;
+
+        --grad-a: #16143c;
+        --grad-b: #322da0;
+        --grad-c: #5a51ee;
+        --glow:   rgba(138, 132, 245, 0.35);
+
+        --success-soft: rgba(16, 185, 129, 0.15);
+        --warning-soft: rgba(245, 158, 11, 0.15);
+        --danger-soft:  rgba(239, 68, 68, 0.15);
+
+        --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.35);
+        --shadow:    0 6px 18px rgba(0, 0, 0, 0.45);
+      }
+
+    
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -548,6 +597,86 @@
       border-radius: 999px;
     }
     body::-webkit-scrollbar-track { background: transparent; }
+
+    /* ═════════════════════════════════════════════════════════════════
+       SMARTFILL UI 2.0 — modern theme layer (mirrors the side panel).
+       ═════════════════════════════════════════════════════════════════ */
+    body {
+      background:
+        radial-gradient(1200px 420px at 108% -8%, var(--primary-soft) 0%, transparent 60%),
+        radial-gradient(900px 380px at -12% 20%, var(--primary-soft) 0%, transparent 55%),
+        var(--bg);
+      background-attachment: fixed;
+    }
+    ::selection { background: var(--primary); color: #fff; }
+    :focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+
+    .top-bar {
+      position: sticky;
+      overflow: hidden;
+      border-bottom: 0;
+      background: linear-gradient(118deg, var(--grad-a) 0%, var(--grad-b) 58%, var(--grad-c) 100%);
+    }
+    .top-bar::before {
+      content: '';
+      position: absolute; inset: 0;
+      background:
+        radial-gradient(480px 90px at 14% 0%, rgba(255, 255, 255, 0.16), transparent 70%),
+        radial-gradient(640px 140px at 92% 130%, rgba(255, 255, 255, 0.10), transparent 70%);
+      pointer-events: none;
+    }
+    .top-bar::after {
+      content: '';
+      position: absolute; left: 0; right: 0; bottom: 0; height: 2px;
+      background: linear-gradient(90deg, transparent, var(--accent), transparent);
+      background-size: 220% 100%;
+      animation: hairline-drift 6s linear infinite;
+      opacity: 0.9;
+    }
+    @keyframes hairline-drift {
+      from { background-position: 130% 0; }
+      to   { background-position: -130% 0; }
+    }
+    .brand { position: relative; z-index: 1; }
+    .brand h1 { color: #fff; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.18); }
+    .brand-icon {
+      background: rgba(255, 255, 255, 0.14);
+      color: #fff;
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.28), 0 2px 8px rgba(0, 0, 0, 0.18);
+      backdrop-filter: blur(4px);
+    }
+
+    /* Brand-tinted focus states (were hard-coded blue). */
+    .tb-search input:focus,
+    .tb-sort select:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px var(--primary-soft);
+    }
+    .tb-seg-btn.is-active { color: var(--primary); }
+    .loading-container .spinner { border-top-color: var(--primary); }
+
+    /* Dark-mode fixes for values hard-coded against light surfaces. */
+          :root[data-theme="dark"] .badge-success { color: #34d399; }
+
+      :root[data-theme="dark"] .badge-danger { color: #f87171; }
+
+      :root[data-theme="dark"] .stat-pill.correct { color: #34d399; }
+
+      :root[data-theme="dark"] .stat-pill.incorrect { color: #f87171; }
+
+      :root[data-theme="dark"] mark.hl { color: #fbbf24; }
+
+      :root[data-theme="dark"] .lightbox-img { background: #14201f; }
+
+    
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
   </style>
 </head>
 <body>

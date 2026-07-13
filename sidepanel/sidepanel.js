@@ -120,6 +120,7 @@ const els = {
   toast: $('toast'),
 
   // Config: color pickers
+  cfgDark: $('cfg-dark'),
   cfgColorForm: $('cfg-color-form'),
   cfgColorImage: $('cfg-color-image'),
   cfgColorCurrent: $('cfg-color-current'),
@@ -3094,9 +3095,9 @@ els.btnClearLog.addEventListener('click', () => {
 // properties on :root, so the suggestion queue retints live.
 
 const DEFAULT_BLOCK_COLORS = {
-  form: '#eef4ff',
-  image: '#ede9fe',
-  current: '#f8fafc',
+  form: '#eef0fe',
+  image: '#fbe9fe',
+  current: '#f6f7fb',
 };
 
 const COLOR_VAR = {
@@ -3128,6 +3129,35 @@ function persistBlockColors() {
   try {
     chrome.storage.local.set({ answerBlockColors: colors }).catch(() => { });
   } catch (_) { /* ignore - storage unavailable */ }
+}
+
+// ── Theme toggle (light default, dark opt-in) ─────────────────────────
+// Setting data-theme="dark" on <html> activates the :root[data-theme="dark"]
+// rules in sidepanel.css. Persisted in chrome.storage and mirrored to
+// localStorage so the inline <head> script can apply it before first paint.
+function applyTheme(theme) {
+  const dark = theme === 'dark';
+  const root = document.documentElement;
+  if (dark) root.setAttribute('data-theme', 'dark');
+  else root.removeAttribute('data-theme');
+  try { localStorage.setItem('sf-theme', dark ? 'dark' : 'light'); } catch (_) { /* non-fatal */ }
+  if (els.cfgDark) els.cfgDark.checked = dark;
+}
+
+function initThemeToggle() {
+  try {
+    chrome.storage.local.get('sfTheme').then((res) => {
+      applyTheme((res && res.sfTheme) === 'dark' ? 'dark' : 'light');
+    }).catch(() => applyTheme('light'));
+  } catch (_) { applyTheme('light'); }
+
+  if (els.cfgDark) {
+    els.cfgDark.addEventListener('change', () => {
+      const theme = els.cfgDark.checked ? 'dark' : 'light';
+      applyTheme(theme);
+      try { chrome.storage.local.set({ sfTheme: theme }).catch(() => { }); } catch (_) { /* ignore */ }
+    });
+  }
 }
 
 function initColorPickers() {
@@ -3173,6 +3203,7 @@ function initColorPickers() {
 // 11. Bootstrap
 // ═════════════════════════════════════════════════════════════════════
 
+initThemeToggle();
 setRingProgress(0);
 setConnection('idle', 'Idle');
 setStatusBadge('IDLE', 'idle');
