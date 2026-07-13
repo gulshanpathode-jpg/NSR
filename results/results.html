@@ -4,14 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Smart Fill - Image Descriptions</title>
-  <script>
-    // Match the side panel's theme (shared extension origin). Light is the
-    // default; the panel's Config → Appearance switch writes this key.
-    try {
-      if (localStorage.getItem('sf-theme') === 'dark')
-        document.documentElement.setAttribute('data-theme', 'dark');
-    } catch (e) { /* storage blocked; fall back to light */ }
-  </script>
+  <script src="theme-init.js"></script>
   <style>
     :root { color-scheme: light; }
     :root[data-theme="dark"] { color-scheme: dark; }
